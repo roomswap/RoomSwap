@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomSwap 3D Studio - Final</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three.js OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at 50% 40%, #1e1b4b 0%, #090d16 65%, #020408 100%);
+            --panel-bg: rgba(15, 23, 42, 0.85);
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body.theme-emerald {
+            --bg-gradient: radial-gradient(circle at 50% 40%, #062c22 0%, #021a14 65%, #010f0b 100%);
+            --panel-bg: rgba(6, 44, 34, 0.88);
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --border-color: rgba(16, 185, 129, 0.2);
+            --text-primary: #f0fdf4;
+            --text-secondary: #a7f3d0;
+        }
+
+        body.theme-ocean {
+            --bg-gradient: radial-gradient(circle at 50% 40%, #0f2d4a 0%, #07192b 65%, #030d17 100%);
+            --panel-bg: rgba(15, 45, 74, 0.88);
+            --accent-color: #0284c7;
+            --accent-hover: #0369a1;
+            --border-color: rgba(56, 189, 248, 0.2);
+            --text-primary: #f0f9ff;
+            --text-secondary: #bae6fd;
+        }
+
+        body.theme-rose {
+            --bg-gradient: radial-gradient(circle at 50% 40%, #3b112c 0%, #210719 65%, #0d020a 100%);
+            --panel-bg: rgba(59, 17, 44, 0.88);
+            --accent-color: #be123c;
+            --accent-hover: #9f1239;
+            --border-color: rgba(244, 63, 94, 0.2);
+            --text-primary: #fff1f2;
+            --text-secondary: #fecdd3;
+        }
+
+        body.theme-light {
+            --bg-gradient: radial-gradient(circle at 50% 40%, #334155 0%, #1e293b 65%, #0f172a 100%);
+            --panel-bg: rgba(30, 41, 59, 0.9);
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            transition: background 0.4s ease;
+            color: var(--text-primary);
+        }
+
+        #webgl-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .theme-accent-bg { background-color: var(--accent-color) !important; }
+        .theme-accent-text { color: var(--accent-color) !important; }
+        .theme-accent-border { border-color: var(--accent-color) !important; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Canvas -->
+    <div id="webgl-container"></div>
+
+    <!-- UI Overlay Header -->
+    <header class="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
+        <div class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-3 pointer-events-auto shadow-2xl">
+            <div class="theme-accent-bg p-2 rounded-xl text-white">
+                <i data-lucide="box" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">RoomSwap 3D Studio</h1>
+                <p class="text-xs opacity-75">Advanced Interior Designer</p>
+            </div>
+        </div>
+
+        <div class="glass-panel px-4 py-2 rounded-xl text-xs hidden md:flex items-center gap-4 pointer-events-auto shadow-xl">
+            <div class="flex items-center gap-1.5"><i data-lucide="mouse-pointer-click" class="w-4 h-4 theme-accent-text"></i> Left Click: Select / Drag</div>
+            <div class="flex items-center gap-1.5"><i data-lucide="rotate-3d" class="w-4 h-4 theme-accent-text"></i> Right Click + Drag: Rotate Camera</div>
+        </div>
+
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <div class="flex items-center gap-1 glass-panel p-1 rounded-xl shadow-xl">
+                <button id="btn-zoom-in" class="p-2 hover:bg-white/10 rounded-lg transition-all active:scale-95" title="Zoom In">
+                    <i data-lucide="zoom-in" class="w-4 h-4 theme-accent-text"></i>
+                </button>
+                <button id="btn-zoom-out" class="p-2 hover:bg-white/10 rounded-lg transition-all active:scale-95" title="Zoom Out">
+                    <i data-lucide="zoom-out" class="w-4 h-4 theme-accent-text"></i>
+                </button>
+            </div>
+
+            <button id="btn-screenshot" class="glass-panel hover:bg-white/10 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-all active:scale-95 shadow-xl">
+                <i data-lucide="camera" class="w-4 h-4 text-emerald-400"></i>
+                <span>Export Snapshot</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar Left -->
+    <aside class="absolute top-20 left-4 bottom-4 w-80 glass-panel rounded-2xl flex flex-col overflow-hidden z-10 shadow-2xl">
+        <div class="flex border-b border-white/10 bg-black/20">
+            <button id="tab-catalog" class="flex-1 py-3 text-sm font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-2 transition-all">
+                <i data-lucide="folder" class="w-4 h-4"></i> Catalog
+            </button>
+            <button id="tab-room" class="flex-1 py-3 text-sm font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-2 transition-all">
+                <i data-lucide="sliders" class="w-4 h-4"></i> Room Setup
+            </button>
+        </div>
+
+        <div id="panel-catalog" class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
+            <p class="text-xs font-semibold opacity-60 uppercase tracking-wider mb-2">Select category to expand:</p>
+            <div id="catalog-categories-container" class="space-y-2"></div>
+        </div>
+
+        <div id="panel-room" class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-5 hidden">
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Room Layout Mode</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-mode-box" class="py-2 px-3 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all">Standard Box</button>
+                    <button id="btn-mode-custom" class="py-2 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all">Draw Custom 2D</button>
+                </div>
+            </div>
+
+            <div id="box-dimensions-wrapper">
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Exact Room Dimensions</label>
+                <div class="space-y-3 bg-black/20 p-3 rounded-xl border border-white/10">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span>Width (X) in meters</span></div>
+                        <input id="input-room-width" type="number" min="1.5" max="30" step="0.1" value="5.0" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span>Depth (Z) in meters</span></div>
+                        <input id="input-room-depth" type="number" min="1.5" max="30" step="0.1" value="5.0" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span>Height (Y) in meters</span></div>
+                        <input id="input-room-height" type="number" min="1.5" max="10" step="0.1" value="2.8" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono">
+                    </div>
+                    <button id="btn-apply-room" class="w-full mt-2 py-2 theme-accent-bg text-white rounded-lg text-xs font-semibold transition-all shadow-md">Apply Dimensions</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Colors & Paints</label>
+                <div class="space-y-3 bg-black/20 p-3 rounded-xl border border-white/10">
+                    <div class="flex justify-between items-center"><span class="text-xs">Wall Color</span><input id="color-walls" type="color" value="#f1f5f9" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs">Floor Color</span><input id="color-floor" type="color" value="#8D5524" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs">Ceiling Color</span><input id="color-ceiling" type="color" value="#ffffff" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0"></div>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Toggles & Structural Controls</label>
+                <div class="space-y-3 bg-black/20 p-3 rounded-xl border border-white/10">
+                    <label class="flex items-center justify-between text-xs cursor-pointer"><span>Enable Walls</span><input id="toggle-walls" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer"></label>
+                    <label class="flex items-center justify-between text-xs cursor-pointer"><span>Enable Ceiling</span><input id="toggle-ceiling" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer"></label>
+                    
+                    <div id="grid-controls-wrapper" class="space-y-3 pt-2 border-t border-white/10">
+                        <div class="flex items-center justify-between text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer"><input id="toggle-grid" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer"><span>Floor Grid</span></label>
+                            <input id="color-grid-floor" type="color" value="#6366f1" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0">
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer"><input id="toggle-wall-grid" type="checkbox" class="w-4 h-4 rounded cursor-pointer"><span>Wall Grid</span></label>
+                            <input id="color-grid-wall" type="color" value="#38bdf8" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0">
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer"><input id="toggle-ceiling-grid" type="checkbox" class="w-4 h-4 rounded cursor-pointer"><span>Ceiling Grid</span></label>
+                            <input id="color-grid-ceiling" type="color" value="#818cf8" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Custom 2D Sketcher Modal -->
+    <div id="sketcher-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center hidden p-6">
+        <div class="glass-panel w-full max-w-4xl h-[85vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-white/20">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/40">
+                <div>
+                    <h2 class="font-bold text-base text-white">Custom Room 2D Sketcher</h2>
+                    <p class="text-xs opacity-70">Type length (m) & Press ENTER, or set custom angle (°).</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="btn-add-next-room" class="px-3 py-1.5 bg-indigo-600/35 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-400/30 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> More Rooms (Multi-Room)
+                    </button>
+                    <button id="btn-undo-vertex" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-medium transition-all">Undo Point</button>
+                    <button id="btn-close-loop" class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-xs font-medium transition-all">Close Loop</button>
+                    <button id="btn-clear-sketch" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-lg text-xs font-medium transition-all">Clear All</button>
+                    <button id="btn-finish-sketch" class="px-4 py-1.5 theme-accent-bg text-white rounded-lg text-xs font-semibold shadow-md transition-all">Generate 3D Room</button>
+                    <button id="btn-close-sketch" class="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
+            <div class="px-6 py-2.5 bg-black/20 border-b border-white/10 flex items-center gap-6 text-xs flex-wrap">
+                <div class="flex items-center gap-2">
+                    <span class="opacity-70">Angle Snapping:</span>
+                    <span class="font-mono theme-accent-text font-bold">15° Increments active</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="opacity-70 font-semibold text-emerald-300">Length (m):</span>
+                    <input id="input-sketch-length" type="number" step="0.1" placeholder="e.g. 5" class="w-24 bg-black/80 border-2 border-emerald-500 rounded-lg px-2.5 py-1 text-white font-mono font-bold focus:outline-none focus:border-emerald-400 shadow-inner">
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="opacity-70 font-semibold text-sky-300">Custom Angle (°):</span>
+                    <input id="input-custom-angle" type="number" step="1" placeholder="e.g. 35" class="w-20 bg-black/80 border-2 border-sky-500 rounded-lg px-2 py-1 text-white font-mono font-bold focus:outline-none focus:border-sky-400 shadow-inner">
+                    <button id="btn-apply-custom-angle" class="px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-semibold transition-all shadow">Set Angle</button>
+                </div>
+            </div>
+
+            <div class="flex-1 relative bg-slate-950 overflow-hidden cursor-crosshair" id="sketcher-canvas-container">
+                <canvas id="sketcher-canvas" class="w-full h-full block"></canvas>
+                <div id="sketcher-tooltip" class="absolute bottom-4 left-4 glass-panel px-3 py-1.5 rounded-lg text-xs font-mono pointer-events-none">
+                    Length: 0.00m | Angle: 0°
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced 3D Furniture Customizer Modal -->
+    <div id="furniture-customizer-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center hidden p-4 md:p-8">
+        <div class="glass-panel w-full max-w-5xl h-[88vh] rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-white/20">
+            <div class="w-full md:w-1/2 h-64 md:h-full bg-slate-950 relative flex flex-col border-b md:border-b-0 md:border-r border-white/10">
+                <div class="absolute top-4 left-4 z-10 glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-2">
+                    <i data-lucide="eye" class="w-4 h-4 theme-accent-text"></i> Live 3D Preview
+                </div>
+                <div id="customizer-3d-container" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+                <div class="absolute bottom-4 left-4 right-4 glass-panel p-2.5 rounded-xl text-[11px] opacity-80 text-center pointer-events-none">
+                    Drag to rotate view | Scroll to zoom
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 flex-1 flex flex-col overflow-hidden bg-black/40">
+                <div class="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/30">
+                    <div>
+                        <h2 id="customizer-item-title" class="font-bold text-base text-white">Advanced Furniture Studio</h2>
+                        <p class="text-xs opacity-70">Customize dimensions in meters (m), materials, and legs.</p>
+                    </div>
+                    <button id="btn-close-customizer" class="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-6">
+                    <div>
+                        <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-3">Exact Item Dimensions (Meters)</label>
+                        <div class="space-y-3 bg-black/20 p-4 rounded-xl border border-white/10">
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Width (X in meters)</span><span id="lbl-dim-x" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
+                                <input id="slider-dim-x" type="range" min="0.2" max="5.0" step="0.05" value="1.0" class="w-full accent-indigo-500 cursor-pointer">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Height (Y in meters)</span><span id="lbl-dim-y" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
+                                <input id="slider-dim-y" type="range" min="0.2" max="4.0" step="0.05" value="1.0" class="w-full accent-indigo-500 cursor-pointer">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Depth (Z in meters)</span><span id="lbl-dim-z" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
+                                <input id="slider-dim-z" type="range" min="0.2" max="5.0" step="0.05" value="1.0" class="w-full accent-indigo-500 cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-3">Parts Material & Color Editor</label>
+                        <div id="customizer-parts-list" class="space-y-2.5 bg-black/20 p-4 rounded-xl border border-white/10"></div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-3">Legs & Base Style Customization</label>
+                        <div class="space-y-3 bg-black/20 p-4 rounded-xl border border-white/10">
+                            <div class="grid grid-cols-3 gap-2">
+                                <button id="btn-legs-standard" class="py-2 px-2 bg-black/40 hover:bg-white/10 border theme-accent-border rounded-lg text-xs font-medium text-white transition-all">None / Standard</button>
+                                <button id="btn-legs-wood" class="py-2 px-2 bg-black/20 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-all opacity-80 hover:opacity-100">Wooden Pegs</button>
+                                <button id="btn-legs-metal" class="py-2 px-2 bg-black/20 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-all opacity-80 hover:opacity-100">Metal Frame</button>
+                            </div>
+
+                            <div id="legs-custom-options" class="space-y-3 pt-3 border-t border-white/10">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Leg Height (m)</span><span id="lbl-leg-height" class="font-mono theme-accent-text font-bold">0.15 m</span></div>
+                                    <input id="slider-leg-height" type="range" min="0.05" max="0.5" step="0.02" value="0.15" class="w-full accent-indigo-500 cursor-pointer">
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs opacity-80">Legs / Frame Color</span>
+                                    <input id="color-leg-material" type="color" value="#d4a373" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-white/10 bg-black/40 flex justify-end gap-3">
+                    <button id="btn-apply-customizer" class="w-full py-2.5 theme-accent-bg text-white font-semibold rounded-xl text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4"></i> Apply & Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contextual Inspector Right Sidebar -->
+    <aside id="inspector-panel" class="absolute top-20 right-4 w-80 glass-panel rounded-2xl p-4 z-10 shadow-2xl transition-all duration-300 transform translate-x-96 opacity-0">
+        <div class="flex justify-between items-center border-b border-white/10 pb-3 mb-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4 theme-accent-text"></i>
+                <h3 id="selected-item-title" class="font-bold text-sm text-white">Item Inspector</h3>
+            </div>
+            <button id="btn-close-inspector" class="opacity-70 hover:opacity-100 p-1 rounded-lg hover:bg-white/10 transition-all">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <div class="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-1">
+            <button id="btn-open-customizer-modal" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 border border-indigo-400/30">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                <span>Open Detailed 3D Customizer</span>
+            </button>
+
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Magnetic Snapping</label>
+                <div class="bg-black/20 p-2.5 rounded-xl border border-white/10 space-y-2">
+                    <label class="flex items-center justify-between text-xs cursor-pointer">
+                        <span>Enable Magnetic Snapping</span>
+                        <input id="toggle-magnetic-snap" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer">
+                    </label>
+                    <hr class="border-white/10">
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button id="btn-snap-center-room" class="py-1.5 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all active:scale-95">Center</button>
+                        <button id="btn-snap-walls" class="py-1.5 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all active:scale-95">Walls</button>
+                        <button id="btn-snap-corners" class="py-1.5 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all active:scale-95">Corners</button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Wall Gap Distance</label>
+                <div class="bg-black/20 p-3 rounded-xl border border-white/10 flex items-center justify-between gap-2">
+                    <span class="text-xs opacity-70">Gap (m):</span>
+                    <input id="input-wall-gap" type="number" step="0.05" min="0" max="0.5" value="0.10" class="w-24 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none">
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Elevation (Height)</label>
+                <div class="bg-black/20 p-3 rounded-xl border border-white/10 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <button id="btn-height-minus" class="px-3 py-1.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-all active:scale-95">- 10 cm</button>
+                        <span id="display-furniture-height" class="text-xs font-mono font-bold theme-accent-text">0.00 m</span>
+                        <button id="btn-height-plus" class="px-3 py-1.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-all active:scale-95">+ 10 cm</button>
+                    </div>
+                    <div class="flex items-center gap-2 pt-1">
+                        <span class="text-[11px] opacity-70">Direct (m):</span>
+                        <input id="input-furniture-height" type="number" step="0.1" value="0" class="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Segment Colors</label>
+                <div id="segments-color-container" class="space-y-2 bg-black/20 p-3 rounded-xl border border-white/10"></div>
+            </div>
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Rotate (45° Steps)</label>
+                <div class="flex items-center justify-between bg-black/20 p-2.5 rounded-xl border border-white/10">
+                    <button id="btn-rot-left" class="p-2.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all active:scale-95 cursor-pointer" title="Rotate Left 45°">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 theme-accent-text"></i>
+                    </button>
+                    <button id="btn-rotate-display" class="px-4 py-2 bg-black/40 border border-white/10 rounded-lg text-xs font-mono font-bold text-white hover:bg-white/5 transition-all">
+                        Rotate: 0°
+                    </button>
+                    <button id="btn-rot-right" class="p-2.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all active:scale-95 cursor-pointer" title="Rotate Right 45°">
+                        <i data-lucide="rotate-cw" class="w-4 h-4 theme-accent-text"></i>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Fine Positioning</label>
+                <div class="grid grid-cols-3 gap-1.5 w-32 mx-auto">
+                    <div></div>
+                    <button id="btn-nudge-up" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-up" class="w-4 h-4 text-white"></i></button>
+                    <div></div>
+                    <button id="btn-nudge-left" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-left" class="w-4 h-4 text-white"></i></button>
+                    <button id="btn-nudge-down" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-down" class="w-4 h-4 text-white"></i></button>
+                    <button id="btn-nudge-right" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-right" class="w-4 h-4 text-white"></i></button>
+                </div>
+            </div>
+            <button id="btn-delete-item" class="w-full mt-2 py-2.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-semibold flex justify-center items-center gap-2 transition-all">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Remove Item
+            </button>
+        </div>
+    </aside>
+
+    <!-- Theme Switcher -->
+    <div id="theme-menu-wrapper" class="absolute bottom-4 right-4 z-20">
+        <div id="theme-dropdown" class="absolute bottom-12 right-0 glass-panel p-3 rounded-2xl mb-2 shadow-2xl w-52 hidden space-y-2">
+            <div class="flex items-center gap-2 border-b border-white/10 pb-2">
+                <i data-lucide="palette" class="w-4 h-4 theme-accent-text"></i>
+                <span class="text-xs font-bold text-white">Application Theme</span>
+            </div>
+            <div class="space-y-1">
+                <button data-theme="" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Deep Indigo</span> <div class="w-3.5 h-3.5 rounded-full bg-indigo-600 border border-indigo-300"></div></button>
+                <button data-theme="theme-emerald" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Sage Emerald</span> <div class="w-3.5 h-3.5 rounded-full bg-emerald-700 border border-emerald-400"></div></button>
+                <button data-theme="theme-ocean" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Muted Ocean</span> <div class="w-3.5 h-3.5 rounded-full bg-sky-700 border border-sky-400"></div></button>
+                <button data-theme="theme-rose" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Dusty Wine</span> <div class="w-3.5 h-3.5 rounded-full bg-rose-800 border border-rose-400"></div></button>
+                <button data-theme="theme-light" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Studio Slate</span> <div class="w-3.5 h-3.5 rounded-full bg-slate-600 border border-slate-300"></div></button>
+            </div>
+        </div>
+        <button id="btn-theme-toggle" class="glass-panel p-3 rounded-full shadow-2xl opacity-80 hover:opacity-100 cursor-pointer transition-all hover:scale-110 active:scale-95 flex items-center justify-center">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5 theme-accent-text"></i>
+        </button>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const CATALOG_CATEGORIES = [
+            {
+                id: 'beds', name: 'Beds & Nightstands', icon: 'bed',
+                items: [
+                    { id: 'bed_double', name: 'Double Bed', icon: 'bed' },
+                    { id: 'bed_king', name: 'King Size Bed', icon: 'bed' },
+                    { id: 'bed_single', name: 'Single Bed', icon: 'bed' },
+                    { id: 'bunk_bed', name: 'Bunk Bed', icon: 'bed' },
+                    { id: 'nightstand', name: 'Nightstand Table', icon: 'box' },
+                    { id: 'dresser', name: 'Bedroom Dresser', icon: 'archive' }
+                ]
+            },
+            {
+                id: 'seating', name: 'Sofas & Armchairs', icon: 'sofa',
+                items: [
+                    { id: 'sofa_modern', name: 'Modern Sofa', icon: 'sofa' },
+                    { id: 'sofa_corner', name: 'Corner Sectional Sofa', icon: 'sofa' },
+                    { id: 'sofa_leather', name: 'Leather Chesterfield Sofa', icon: 'sofa' },
+                    { id: 'armchair', name: 'Armchair', icon: 'armchair' },
+                    { id: 'beanbag', name: 'Beanbag Lounge Chair', icon: 'circle' },
+                    { id: 'bench_ottoman', name: 'Upholstered Ottoman Bench', icon: 'layout' }
+                ]
+            },
+            {
+                id: 'kitchen', name: 'Kitchen & Dining', icon: 'utensils',
+                items: [
+                    { id: 'kitchen_island', name: 'Modern Kitchen Island', icon: 'layout' },
+                    { id: 'kitchen_upper_cabinet', name: 'Upper Kitchen Cabinets', icon: 'archive' },
+                    { id: 'fridge_modern', name: 'Double-Door Refrigerator', icon: 'box' },
+                    { id: 'kitchen_oven_unit', name: 'Built-in Oven & Hob Unit', icon: 'archive' },
+                    { id: 'dishwasher_sink', name: 'Detailed Sink & Dishwasher', icon: 'layout' },
+                    { id: 'bar_stool', name: 'High Kitchen Bar Stool', icon: 'armchair' },
+                    { id: 'dining_table', name: 'Large Dining Table', icon: 'layout' },
+                    { id: 'dining_chair', name: 'Wooden Dining Chair', icon: 'armchair' }
+                ]
+            },
+            {
+                id: 'bathroom', name: 'Bathroom & Toilet', icon: 'bath',
+                items: [
+                    { id: 'bath_vanity', name: 'Modern Bathroom Vanity', icon: 'layout' },
+                    { id: 'bath_mirror_cabinet', name: 'Illuminated Bathroom Cabinet', icon: 'app-window' },
+                    { id: 'shower_cabin', name: 'Glass Shower Cabin', icon: 'square' },
+                    { id: 'bathtub', name: 'Freestanding Bathtub', icon: 'bath' },
+                    { id: 'toilet_sink', name: 'Wall-Mounted Toilet & Sink', icon: 'box' }
+                ]
+            },
+            {
+                id: 'tables', name: 'Tables & Desks', icon: 'laptop',
+                items: [
+                    { id: 'desk_office', name: 'Executive Office Desk', icon: 'laptop' },
+                    { id: 'gaming_desk', name: 'RGB Gaming Setup Desk', icon: 'monitor' },
+                    { id: 'coffee_table', name: 'Glass Coffee Table', icon: 'layout' },
+                    { id: 'chair_office', name: 'Ergonomic Mesh Chair', icon: 'armchair' }
+                ]
+            },
+            {
+                id: 'storage', name: 'Storage & Shelving', icon: 'archive',
+                items: [
+                    { id: 'wardrobe_large', name: 'Large Wooden Wardrobe', icon: 'archive' },
+                    { id: 'wardrobe_sliding', name: 'Sliding Mirror Closet', icon: 'archive' },
+                    { id: 'modular_shelves', name: 'Modular Wall Shelving', icon: 'layers' },
+                    { id: 'tv_stand', name: 'Modern TV Console Unit', icon: 'tv' },
+                    { id: 'bookshelf', name: 'Tall Library Bookshelf', icon: 'book-open' },
+                    { id: 'shoe_cabinet', name: 'Entryway Shoe Cabinet', icon: 'box' },
+                    { id: 'drawer_unit', name: 'Storage Drawer Chest', icon: 'archive' }
+                ]
+            },
+            {
+                id: 'lighting', name: 'Lighting', icon: 'lamp',
+                items: [
+                    { id: 'lamp_floor', name: 'Floor Standing Arc Lamp', icon: 'lamp' },
+                    { id: 'lamp_desk', name: 'Minimalist Desk Lamp', icon: 'lamp-ceiling' },
+                    { id: 'chandelier', name: 'Luxury Glass Chandelier', icon: 'sun' },
+                    { id: 'wall_sconce', name: 'Modern Wall Sconce', icon: 'lightbulb' }
+                ]
+            },
+            {
+                id: 'decor', name: 'Decor & Mirrors', icon: 'flower-2',
+                items: [
+                    { id: 'wall_mirror_led', name: 'Full Wall Mirror with LEDs', icon: 'app-window' },
+                    { id: 'round_mirror', name: 'Decorative Round Mirror', icon: 'circle' },
+                    { id: 'plant_palm', name: 'Indoor Palm Pot', icon: 'flower-2' },
+                    { id: 'plant_potted', name: 'Large Indoor Monstera', icon: 'flower-2' },
+                    { id: 'rug_large', name: 'Nordic Area Rug', icon: 'square' },
+                    { id: 'painting_art', name: 'Modern Abstract Wall Art', icon: 'image' }
+                ]
+            }
+        ];
+
+        let scene, camera, renderer, controls;
+        let roomGroup, floorMesh, ceilingMesh;
+        let walls = { front: null, back: null, left: null, right: null };
+        let customWallMeshes = [];
+        let wallGridGroup = null, floorGridHelper = null;
+        
+        let roomWidth = 5.0, roomDepth = 5.0, roomHeight = 2.8;
+        let roomMode = 'box';
+        let multiRoomPolygons = [];
+        let wallGapDistance = 0.10;
+        let isMagneticSnapEnabled = true;
+
+        let placedFurniture = [], selectedObject = null, selectionBox = null;
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let isDraggingItem = false;
+        let dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        let planeIntersection = new THREE.Vector3();
+
+        let customizerScene, customizerCamera, customizerRenderer, customizerControls;
+        let previewObject = null;
+
+        let sketchPoints = [];
+        let sketchHoverPoint = null;
+        let currentSnappedAngleRad = 0;
+        const pixelsPerMeter = 50;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initLucideIcons();
+            initThreeJS();
+            buildRoom();
+            populateCategorizedCatalog();
+            setupEventListeners();
+            initSketcherCanvas();
+            initCustomizer3DView();
+            animate();
+        });
+
+        function initLucideIcons() { lucide.createIcons(); }
+
+        function initThreeJS() {
+            const container = document.getElementById('webgl-container');
+            scene = new THREE.Scene();
+            scene.background = null;
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(8, 6, 8);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio > 1 ? window.devicePixelRatio : 1);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 + 0.1;
+            controls.minDistance = 2;
+            controls.maxDistance = 60;
+            controls.target.set(0, 1, 0);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xfffbeb, 0.85);
+            dirLight.position.set(8, 14, 8);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+            const boxMat = new THREE.MeshBasicMaterial({ color: 0x6366f1, wireframe: true });
+            selectionBox = new THREE.Mesh(boxGeo, boxMat);
+            selectionBox.visible = false;
+            scene.add(selectionBox);
+        }
+
+        function buildRoom() {
+            if (roomGroup) scene.remove(roomGroup);
+            roomGroup = new THREE.Group();
+            walls = { front: null, back: null, left: null, right: null };
+            customWallMeshes = [];
+
+            const wallColorHex = document.getElementById('color-walls').value;
+            const floorColorHex = document.getElementById('color-floor').value;
+            const ceilingColorHex = document.getElementById('color-ceiling').value;
+            const floorGridColorHex = document.getElementById('color-grid-floor').value;
+            const wallGridColorHex = document.getElementById('color-grid-wall').value;
+
+            const showWalls = document.getElementById('toggle-walls').checked;
+            const showCeiling = document.getElementById('toggle-ceiling').checked;
+            const showFloorGrid = document.getElementById('toggle-grid').checked;
+            const showWallGrid = document.getElementById('toggle-wall-grid').checked;
+
+            const createWallMaterial = () => new THREE.MeshStandardMaterial({ 
+                color: wallColorHex, 
+                roughness: 0.85, 
+                side: THREE.DoubleSide 
+            });
+
+            if (roomMode === 'box') {
+                document.getElementById('grid-controls-wrapper').classList.remove('hidden');
+
+                const floorGeo = new THREE.PlaneGeometry(roomWidth, roomDepth);
+                floorMesh = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ color: floorColorHex, roughness: 0.4, metalness: 0.1 }));
+                floorMesh.rotation.x = -Math.PI / 2;
+                floorMesh.receiveShadow = true;
+                roomGroup.add(floorMesh);
+
+                if (showFloorGrid) {
+                    floorGridHelper = new THREE.GridHelper(roomWidth, Math.round(roomWidth), new THREE.Color(floorGridColorHex), new THREE.Color(floorGridColorHex));
+                    floorGridHelper.scale.z = roomDepth / roomWidth;
+                    floorGridHelper.position.y = 0.01;
+                    roomGroup.add(floorGridHelper);
+                }
+
+                if (showWalls) {
+                    const wMat = createWallMaterial();
+                    
+                    walls.back = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomHeight), wMat);
+                    walls.back.position.set(0, roomHeight / 2, -roomDepth / 2);
+                    walls.back.receiveShadow = true;
+                    roomGroup.add(walls.back);
+
+                    walls.front = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomHeight), wMat);
+                    walls.front.position.set(0, roomHeight / 2, roomDepth / 2);
+                    walls.front.rotation.y = Math.PI;
+                    walls.front.receiveShadow = true;
+                    roomGroup.add(walls.front);
+
+                    walls.left = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, roomHeight), wMat);
+                    walls.left.position.set(-roomWidth / 2, roomHeight / 2, 0);
+                    walls.left.rotation.y = Math.PI / 2;
+                    walls.left.receiveShadow = true;
+                    roomGroup.add(walls.left);
+
+                    walls.right = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, roomHeight), wMat);
+                    walls.right.position.set(roomWidth / 2, roomHeight / 2, 0);
+                    walls.right.rotation.y = -Math.PI / 2;
+                    walls.right.receiveShadow = true;
+                    roomGroup.add(walls.right);
+                }
+
+                if (showWallGrid && showWalls) {
+                    wallGridGroup = new THREE.Group();
+                    const wgBack = new THREE.GridHelper(roomWidth, Math.round(roomWidth), new THREE.Color(wallGridColorHex), new THREE.Color(wallGridColorHex));
+                    wgBack.rotation.x = Math.PI / 2;
+                    wgBack.position.set(0, roomHeight / 2, -roomDepth / 2 + 0.01);
+                    wallGridGroup.add(wgBack);
+                    roomGroup.add(wallGridGroup);
+                }
+
+                if (showCeiling) {
+                    ceilingMesh = new THREE.Mesh(
+                        new THREE.PlaneGeometry(roomWidth, roomDepth),
+                        new THREE.MeshStandardMaterial({ color: ceilingColorHex, roughness: 0.9, side: THREE.DoubleSide })
+                    );
+                    ceilingMesh.position.set(0, roomHeight, 0);
+                    ceilingMesh.rotation.x = Math.PI / 2;
+                    ceilingMesh.receiveShadow = true;
+                    roomGroup.add(ceilingMesh);
+                }
+
+                controls.target.set(0, 1, 0);
+            } else if (roomMode === 'custom' && multiRoomPolygons.length > 0) {
+                document.getElementById('grid-controls-wrapper').classList.add('hidden');
+
+                multiRoomPolygons.forEach((polyPoints) => {
+                    if (polyPoints.length < 3) return;
+                    const shape = new THREE.Shape();
+                    polyPoints.forEach((pt, idx) => {
+                        if (idx === 0) shape.moveTo(pt.x, pt.y);
+                        else shape.lineTo(pt.x, pt.y);
+                    });
+
+                    const floorGeom = new THREE.ShapeGeometry(shape);
+                    const subFloor = new THREE.Mesh(floorGeom, new THREE.MeshStandardMaterial({ color: floorColorHex, roughness: 0.4, side: THREE.DoubleSide }));
+                    subFloor.rotation.x = Math.PI / 2;
+                    subFloor.position.y = 0.001;
+                    roomGroup.add(subFloor);
+
+                    if (showCeiling) {
+                        const subCeiling = new THREE.Mesh(floorGeom, new THREE.MeshStandardMaterial({ color: ceilingColorHex, roughness: 0.9, side: THREE.DoubleSide }));
+                        subCeiling.rotation.x = Math.PI / 2;
+                        subCeiling.position.y = roomHeight;
+                        subCeiling.userData = { isCustomCeiling: true };
+                        ceilingMesh = subCeiling;
+                        roomGroup.add(subCeiling);
+                    }
+
+                    if (showWalls) {
+                        const wMat = createWallMaterial();
+                        for (let i = 0; i < polyPoints.length; i++) {
+                            const p1 = polyPoints[i];
+                            const p2 = polyPoints[(i + 1) % polyPoints.length];
+
+                            const dx = p2.x - p1.x;
+                            const dz = p2.y - p1.y;
+                            const wallLength = Math.hypot(dx, dz);
+                            const angle = Math.atan2(dz, dx);
+
+                            const wallGeom = new THREE.PlaneGeometry(wallLength, roomHeight);
+                            const wall = new THREE.Mesh(wallGeom, wMat);
+
+                            wall.position.set((p1.x + p2.x) / 2, roomHeight / 2, (p1.y + p2.y) / 2);
+                            wall.rotation.y = -angle;
+                            wall.receiveShadow = true;
+
+                            wall.userData = {
+                                midX: (p1.x + p2.x) / 2,
+                                midZ: (p1.y + p2.y) / 2,
+                                p1: p1,
+                                p2: p2,
+                                angleRad: angle
+                            };
+
+                            customWallMeshes.push(wall);
+                            roomGroup.add(wall);
+                        }
+                    }
+                });
+
+                controls.target.set(0, 1, 0);
+            }
+
+            scene.add(roomGroup);
+        }
+
+        function initSketcherCanvas() {
+            const canvas = document.getElementById('sketcher-canvas');
+            const ctx = canvas.getContext('2d');
+            const container = document.getElementById('sketcher-canvas-container');
+            const tooltip = document.getElementById('sketcher-tooltip');
+            const lengthInput = document.getElementById('input-sketch-length');
+            const customAngleInput = document.getElementById('input-custom-angle');
+
+            function resizeCanvas() {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                redraw();
+            }
+
+            function redraw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+
+                ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                ctx.lineWidth = 1;
+                const gridSize = pixelsPerMeter;
+                for (let x = 0; x < canvas.width; x += gridSize) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+                }
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+                }
+
+                ctx.strokeStyle = 'rgba(99, 102, 241, 0.5)';
+                ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.stroke();
+
+                multiRoomPolygons.forEach((poly) => {
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    poly.forEach((pt, idx) => {
+                        const px = cx + pt.x * pixelsPerMeter;
+                        const py = cy + pt.y * pixelsPerMeter;
+                        if (idx === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    });
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+                    ctx.fill();
+                });
+
+                if (sketchPoints.length === 0) return;
+
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                sketchPoints.forEach((pt, idx) => {
+                    const px = cx + pt.x * pixelsPerMeter;
+                    const py = cy + pt.y * pixelsPerMeter;
+                    if (idx === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                });
+
+                if (sketchHoverPoint && sketchPoints.length > 0) {
+                    ctx.lineTo(cx + sketchHoverPoint.x * pixelsPerMeter, cy + sketchHoverPoint.y * pixelsPerMeter);
+                }
+                ctx.stroke();
+
+                sketchPoints.forEach((pt, idx) => {
+                    const px = cx + pt.x * pixelsPerMeter;
+                    const py = cy + pt.y * pixelsPerMeter;
+                    ctx.fillStyle = idx === 0 ? '#10b981' : '#6366f1';
+                    ctx.beginPath(); ctx.arc(px, py, idx === 0 ? 8 : 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+                });
+            }
+
+            canvas.onmousemove = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+
+                let targetX = (mouseX - cx) / pixelsPerMeter;
+                let targetY = (mouseY - cy) / pixelsPerMeter;
+
+                if (sketchPoints.length > 0) {
+                    const lastPt = sketchPoints[sketchPoints.length - 1];
+                    const dx = targetX - lastPt.x;
+                    const dy = targetY - lastPt.y;
+                    const dist = Math.hypot(dx, dy);
+                    let angleDeg = THREE.MathUtils.radToDeg(Math.atan2(dy, dx));
+                    if (angleDeg < 0) angleDeg += 360;
+
+                    const snappedDeg = Math.round(angleDeg / 15) * 15;
+                    currentSnappedAngleRad = THREE.MathUtils.degToRad(snappedDeg);
+
+                    targetX = lastPt.x + dist * Math.cos(currentSnappedAngleRad);
+                    targetY = lastPt.y + dist * Math.sin(currentSnappedAngleRad);
+
+                    tooltip.innerText = `Length: ${dist.toFixed(2)}m | Angle: ${snappedDeg}°`;
+                } else {
+                    tooltip.innerText = `X: ${targetX.toFixed(2)}m | Y: ${targetY.toFixed(2)}m`;
+                }
+
+                sketchHoverPoint = { x: targetX, y: targetY };
+                redraw();
+            };
+
+            canvas.onclick = () => {
+                if (sketchHoverPoint) {
+                    if (sketchPoints.length >= 2) {
+                        const startPt = sketchPoints[0];
+                        const distToStart = Math.hypot(sketchHoverPoint.x - startPt.x, sketchHoverPoint.y - startPt.y);
+                        if (distToStart < 0.4) {
+                            finishSketch();
+                            return;
+                        }
+                    }
+                    sketchPoints.push({ x: sketchHoverPoint.x, y: sketchHoverPoint.y });
+                    lengthInput.value = '';
+                    lengthInput.focus();
+                    redraw();
+                }
+            };
+
+            lengthInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const val = parseFloat(lengthInput.value);
+                    if (!isNaN(val) && val > 0) {
+                        let lastPt = sketchPoints.length > 0 ? sketchPoints[sketchPoints.length - 1] : { x: 0, y: 0 };
+                        const nextX = lastPt.x + val * Math.cos(currentSnappedAngleRad);
+                        const nextY = lastPt.y + val * Math.sin(currentSnappedAngleRad);
+
+                        sketchPoints.push({ x: nextX, y: nextY });
+                        lengthInput.value = '';
+                        lengthInput.focus();
+                        redraw();
+                    }
+                }
+            });
+
+            document.getElementById('btn-apply-custom-angle').onclick = () => {
+                const angVal = parseFloat(customAngleInput.value);
+                if (!isNaN(angVal)) {
+                    currentSnappedAngleRad = THREE.MathUtils.degToRad(angVal);
+                    if (sketchPoints.length > 0 && sketchHoverPoint) {
+                        const lastPt = sketchPoints[sketchPoints.length - 1];
+                        const currentDist = Math.hypot(sketchHoverPoint.x - lastPt.x, sketchHoverPoint.y - lastPt.y) || 2.0;
+                        sketchHoverPoint = {
+                            x: lastPt.x + currentDist * Math.cos(currentSnappedAngleRad),
+                            y: lastPt.y + currentDist * Math.sin(currentSnappedAngleRad)
+                        };
+                        redraw();
+                    }
+                    lengthInput.focus();
+                }
+            };
+
+            document.getElementById('btn-add-next-room').onclick = () => {
+                if (sketchPoints.length >= 3) {
+                    multiRoomPolygons.push([...sketchPoints]);
+                    sketchPoints = [];
+                    redraw();
+                } else {
+                    alert('Finish drawing the current room first (at least 3 points).');
+                }
+            };
+
+            document.getElementById('btn-undo-vertex').onclick = () => { sketchPoints.pop(); lengthInput.focus(); redraw(); };
+            document.getElementById('btn-clear-sketch').onclick = () => { sketchPoints = []; multiRoomPolygons = []; lengthInput.focus(); redraw(); };
+            
+            function finishSketch() {
+                if (sketchPoints.length >= 3) {
+                    multiRoomPolygons.push([...sketchPoints]);
+                    sketchPoints = [];
+                }
+
+                if (multiRoomPolygons.length === 0) {
+                    alert('Please draw at least 1 room with at least 3 points.');
+                    return;
+                }
+
+                let sumX = 0, sumY = 0, count = 0;
+                multiRoomPolygons.forEach(poly => {
+                    poly.forEach(pt => { sumX += pt.x; sumY += pt.y; count++; });
+                });
+                const centerX = sumX / count;
+                const centerY = sumY / count;
+
+                multiRoomPolygons = multiRoomPolygons.map(poly => poly.map(p => ({
+                    x: p.x - centerX,
+                    y: p.y - centerY
+                })));
+
+                roomMode = 'custom';
+                document.getElementById('sketcher-modal').classList.add('hidden');
+                document.getElementById('btn-mode-custom').className = 'py-2 px-3 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all';
+                document.getElementById('btn-mode-box').className = 'py-2 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all';
+                document.getElementById('box-dimensions-wrapper').classList.add('hidden');
+                buildRoom();
+            }
+
+            document.getElementById('btn-finish-sketch').onclick = finishSketch;
+            document.getElementById('btn-close-loop').onclick = finishSketch;
+
+            document.getElementById('btn-mode-custom').addEventListener('click', () => {
+                document.getElementById('sketcher-modal').classList.remove('hidden');
+                setTimeout(() => {
+                    resizeCanvas();
+                    lengthInput.focus();
+                }, 50);
+            });
+        }
+
+        // --- PROCEDURAL FURNITURE MESH GENERATOR (SVI STOLOVI I STOLICE IMAJU NOGE PO DEFAULTU + DETALJNI SINK) ---
+        function createFurnitureMesh(typeId) {
+            const group = new THREE.Group();
+            let parts = {};
+            const createPart = (name, geometry, material, position = [0,0,0], rotation = [0,0,0]) => {
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(...position); mesh.rotation.set(...rotation);
+                mesh.castShadow = true; mesh.receiveShadow = true;
+                mesh.userData = { partName: name };
+                group.add(mesh); parts[name] = material;
+                return mesh;
+            };
+
+            const defaultMat = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.1 });
+            const woodMat = defaultMat('#5c3a21');
+            const lightWoodMat = defaultMat('#d4a373');
+            const darkMat = defaultMat('#1e293b');
+            const metalMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', metalness: 0.8, roughness: 0.2 });
+            const blackMetalMat = new THREE.MeshStandardMaterial({ color: '#111827', metalness: 0.7, roughness: 0.3 });
+            const fabricMat = defaultMat('#3b82f6');
+            const secondaryFabric = defaultMat('#10b981');
+            const leatherMat = defaultMat('#451a03');
+            const whiteMat = defaultMat('#ffffff');
+            const glassMat = new THREE.MeshStandardMaterial({ color: '#38bdf8', roughness: 0.1, transparent: true, opacity: 0.6 });
+            const plantGreen = defaultMat('#22c55e');
+
+            switch(typeId) {
+                case 'dishwasher_sink':
+                    // DETALJNIJI SINK I SUDOPERA (KORITO + SLAVINA)
+                    createPart('Cabinet', new THREE.BoxGeometry(0.65, 0.82, 1.4), darkMat, [0, 0.41, 0]);
+                    createPart('Basin', new THREE.BoxGeometry(0.45, 0.2, 0.55), whiteMat, [0, 0.81, 0.3]);
+                    createPart('Faucet Base', new THREE.CylinderGeometry(0.02, 0.02, 0.15), metalMat, [0, 0.95, -0.05]);
+                    createPart('Faucet Spout', new THREE.CylinderGeometry(0.015, 0.015, 0.2), metalMat, [0, 1.02, 0.02], [Math.PI / 2, 0, 0]);
+                    break;
+                case 'desk_office':
+                    createPart('Desktop', new THREE.BoxGeometry(1.0, 0.08, 1.8), woodMat, [0, 0.75, 0]);
+                    createPart('Leg Front Left', new THREE.CylinderGeometry(0.03, 0.03, 0.71), blackMetalMat, [0.44, 0.355, 0.8]);
+                    createPart('Leg Front Right', new THREE.CylinderGeometry(0.03, 0.03, 0.71), blackMetalMat, [0.44, 0.355, -0.8]);
+                    createPart('Leg Back Left', new THREE.CylinderGeometry(0.03, 0.03, 0.71), blackMetalMat, [-0.44, 0.355, 0.8]);
+                    createPart('Leg Back Right', new THREE.CylinderGeometry(0.03, 0.03, 0.71), blackMetalMat, [-0.44, 0.355, -0.8]);
+                    break;
+                case 'gaming_desk':
+                    createPart('Desktop', new THREE.BoxGeometry(1.1, 0.06, 1.8), blackMetalMat, [0, 0.75, 0]);
+                    createPart('Monitor', new THREE.BoxGeometry(0.05, 0.5, 0.9), darkMat, [0.3, 1.05, 0]);
+                    createPart('Z-Leg Left', new THREE.BoxGeometry(0.08, 0.71, 1.6), metalMat, [0.45, 0.355, 0]);
+                    createPart('Z-Leg Right', new THREE.BoxGeometry(0.08, 0.71, 1.6), metalMat, [-0.45, 0.355, 0]);
+                    break;
+                case 'dining_table':
+                    createPart('Table Top', new THREE.BoxGeometry(1.2, 0.1, 2.4), woodMat, [0, 0.75, 0]);
+                    createPart('Table Leg 1', new THREE.CylinderGeometry(0.04, 0.04, 0.7), woodMat, [0.5, 0.35, 1.0]);
+                    createPart('Table Leg 2', new THREE.CylinderGeometry(0.04, 0.04, 0.7), woodMat, [0.5, 0.35, -1.0]);
+                    createPart('Table Leg 3', new THREE.CylinderGeometry(0.04, 0.04, 0.7), woodMat, [-0.5, 0.35, 1.0]);
+                    createPart('Table Leg 4', new THREE.CylinderGeometry(0.04, 0.04, 0.7), woodMat, [-0.5, 0.35, -1.0]);
+                    break;
+                case 'coffee_table':
+                    createPart('Table Top', new THREE.BoxGeometry(0.8, 0.06, 1.2), glassMat, [0, 0.42, 0]);
+                    createPart('Coffee Leg 1', new THREE.CylinderGeometry(0.025, 0.025, 0.39), blackMetalMat, [0.35, 0.195, 0.5]);
+                    createPart('Coffee Leg 2', new THREE.CylinderGeometry(0.025, 0.025, 0.39), blackMetalMat, [0.35, 0.195, -0.5]);
+                    createPart('Coffee Leg 3', new THREE.CylinderGeometry(0.025, 0.025, 0.39), blackMetalMat, [-0.35, 0.195, 0.5]);
+                    createPart('Coffee Leg 4', new THREE.CylinderGeometry(0.025, 0.025, 0.39), blackMetalMat, [-0.35, 0.195, -0.5]);
+                    break;
+                case 'dining_chair':
+                    createPart('Seat', new THREE.BoxGeometry(0.48, 0.06, 0.48), woodMat, [0, 0.45, 0]);
+                    createPart('Backrest', new THREE.BoxGeometry(0.05, 0.45, 0.48), woodMat, [-0.2, 0.7, 0]);
+                    createPart('Chair Leg 1', new THREE.CylinderGeometry(0.02, 0.02, 0.45), woodMat, [0.2, 0.225, 0.2]);
+                    createPart('Chair Leg 2', new THREE.CylinderGeometry(0.02, 0.02, 0.45), woodMat, [0.2, 0.225, -0.2]);
+                    createPart('Chair Leg 3', new THREE.CylinderGeometry(0.02, 0.02, 0.45), woodMat, [-0.2, 0.225, 0.2]);
+                    createPart('Chair Leg 4', new THREE.CylinderGeometry(0.02, 0.02, 0.45), woodMat, [-0.2, 0.225, -0.2]);
+                    break;
+                case 'chair_office':
+                    createPart('Seat', new THREE.BoxGeometry(0.55, 0.08, 0.55), darkMat, [0, 0.48, 0]);
+                    createPart('Backrest', new THREE.BoxGeometry(0.08, 0.5, 0.55), darkMat, [-0.25, 0.78, 0]);
+                    createPart('Base Post', new THREE.CylinderGeometry(0.04, 0.04, 0.4), metalMat, [0, 0.24, 0]);
+                    break;
+
+                // OSTALI MODELI
+                case 'fridge_modern':
+                    createPart('Fridge Body', new THREE.BoxGeometry(0.9, 1.8, 0.8), metalMat, [0, 0.9, 0]);
+                    createPart('Left Door', new THREE.BoxGeometry(0.44, 1.76, 0.05), metalMat, [-0.22, 0.9, 0.41]);
+                    createPart('Right Door', new THREE.BoxGeometry(0.44, 1.76, 0.05), metalMat, [0.22, 0.9, 0.41]);
+                    createPart('Left Handle', new THREE.BoxGeometry(0.03, 0.4, 0.04), blackMetalMat, [-0.04, 0.9, 0.45]);
+                    createPart('Right Handle', new THREE.BoxGeometry(0.03, 0.4, 0.04), blackMetalMat, [0.04, 0.9, 0.45]);
+                    break;
+                case 'kitchen_oven_unit':
+                    createPart('Cabinet Base', new THREE.BoxGeometry(0.65, 0.9, 0.65), darkMat, [0, 0.45, 0]);
+                    createPart('Built-in Oven', new THREE.BoxGeometry(0.55, 0.55, 0.05), blackMetalMat, [0, 0.5, 0.33]);
+                    createPart('Ceramic Hob', new THREE.BoxGeometry(0.55, 0.02, 0.55), darkMat, [0, 0.91, 0]);
+                    break;
+                case 'bar_stool':
+                    createPart('Seat Cushion', new THREE.CylinderGeometry(0.22, 0.22, 0.08), leatherMat, [0, 0.75, 0]);
+                    createPart('Center Stand', new THREE.CylinderGeometry(0.03, 0.03, 0.7), metalMat, [0, 0.35, 0]);
+                    createPart('Metal Base', new THREE.CylinderGeometry(0.25, 0.25, 0.02), metalMat, [0, 0.01, 0]);
+                    break;
+                case 'bath_mirror_cabinet':
+                    createPart('Cabinet Box', new THREE.BoxGeometry(0.2, 0.8, 0.8), whiteMat, [0, 1.4, 0]);
+                    createPart('Mirror Doors', new THREE.BoxGeometry(0.02, 0.78, 0.78), glassMat, [0.11, 1.4, 0]);
+                    break;
+                case 'modular_shelves':
+                    createPart('Back Panel', new THREE.BoxGeometry(0.02, 1.6, 1.2), woodMat, [0, 1.0, 0]);
+                    createPart('Shelf 1', new THREE.BoxGeometry(0.3, 0.03, 1.1), lightWoodMat, [0.14, 0.5, 0]);
+                    createPart('Shelf 2', new THREE.BoxGeometry(0.3, 0.03, 1.1), lightWoodMat, [0.14, 1.0, 0]);
+                    createPart('Shelf 3', new THREE.BoxGeometry(0.3, 0.03, 1.1), lightWoodMat, [0.14, 1.5, 0]);
+                    break;
+                case 'kitchen_island':
+                    createPart('Counter Top', new THREE.BoxGeometry(1.2, 0.1, 2.2), lightWoodMat, [0, 0.9, 0]);
+                    createPart('Base Cabinet', new THREE.BoxGeometry(1.1, 0.85, 2.1), darkMat, [0, 0.425, 0]);
+                    break;
+                case 'kitchen_upper_cabinet':
+                    createPart('Upper Cabinet', new THREE.BoxGeometry(0.4, 0.7, 1.8), whiteMat, [0, 1.8, 0]);
+                    break;
+                case 'bath_vanity':
+                    createPart('Vanity Base', new THREE.BoxGeometry(0.55, 0.75, 1.2), woodMat, [0, 0.375, 0]);
+                    createPart('Ceramic Sink', new THREE.BoxGeometry(0.45, 0.15, 0.6), whiteMat, [0, 0.825, 0]);
+                    break;
+                case 'shower_cabin':
+                    createPart('Glass Enclosure', new THREE.BoxGeometry(1.0, 2.1, 1.0), glassMat, [0, 1.05, 0]);
+                    createPart('Shower Tray', new THREE.BoxGeometry(1.02, 0.1, 1.02), whiteMat, [0, 0.05, 0]);
+                    break;
+                case 'bathtub':
+                    createPart('Tub Shell', new THREE.BoxGeometry(0.85, 0.6, 1.7), whiteMat, [0, 0.3, 0]);
+                    break;
+                case 'toilet_sink':
+                    createPart('Toilet Bowl', new THREE.BoxGeometry(0.4, 0.4, 0.6), whiteMat, [0, 0.2, 0]);
+                    break;
+                case 'wall_mirror_led':
+                    createPart('Mirror Frame', new THREE.BoxGeometry(0.05, 1.2, 0.8), blackMetalMat, [0, 1.4, 0]);
+                    createPart('LED Glass', new THREE.BoxGeometry(0.06, 1.1, 0.7), glassMat, [0.01, 1.4, 0]);
+                    break;
+                case 'round_mirror':
+                    createPart('Round Frame', new THREE.CylinderGeometry(0.4, 0.4, 0.04), woodMat, [0, 1.4, 0], [Math.PI / 2, 0, 0]);
+                    break;
+                case 'plant_palm':
+                    createPart('Pot', new THREE.CylinderGeometry(0.3, 0.2, 0.5), darkMat, [0, 0.25, 0]);
+                    createPart('Palm Leaves', new THREE.SphereGeometry(0.6, 8, 8), plantGreen, [0, 0.9, 0]);
+                    break;
+                case 'bed_double':
+                    createPart('Frame', new THREE.BoxGeometry(2.1, 0.3, 2.0), woodMat, [0, 0.15, 0]);
+                    createPart('Mattress', new THREE.BoxGeometry(2.0, 0.35, 1.9), fabricMat, [0, 0.42, 0]);
+                    createPart('Headboard', new THREE.BoxGeometry(0.2, 1.1, 2.0), woodMat, [-0.95, 0.55, 0]);
+                    createPart('Pillow 1', new THREE.BoxGeometry(0.35, 0.12, 0.7), whiteMat, [-0.7, 0.65, 0.45]);
+                    createPart('Pillow 2', new THREE.BoxGeometry(0.35, 0.12, 0.7), whiteMat, [-0.7, 0.65, -0.45]);
+                    break;
+                case 'bed_king':
+                    createPart('Frame', new THREE.BoxGeometry(2.3, 0.3, 2.2), woodMat, [0, 0.15, 0]);
+                    createPart('Mattress', new THREE.BoxGeometry(2.2, 0.35, 2.1), fabricMat, [0, 0.42, 0]);
+                    createPart('Headboard', new THREE.BoxGeometry(0.2, 1.2, 2.2), woodMat, [-1.05, 0.6, 0]);
+                    createPart('Pillow 1', new THREE.BoxGeometry(0.4, 0.12, 0.8), whiteMat, [-0.8, 0.65, 0.5]);
+                    createPart('Pillow 2', new THREE.BoxGeometry(0.4, 0.12, 0.8), whiteMat, [-0.8, 0.65, -0.5]);
+                    break;
+                case 'bed_single':
+                    createPart('Frame', new THREE.BoxGeometry(2.1, 0.3, 1.1), woodMat, [0, 0.15, 0]);
+                    createPart('Mattress', new THREE.BoxGeometry(2.0, 0.35, 1.0), fabricMat, [0, 0.42, 0]);
+                    createPart('Headboard', new THREE.BoxGeometry(0.2, 1.0, 1.1), woodMat, [-0.95, 0.5, 0]);
+                    createPart('Pillow', new THREE.BoxGeometry(0.35, 0.12, 0.7), whiteMat, [-0.7, 0.65, 0]);
+                    break;
+                case 'bunk_bed':
+                    createPart('Post 1', new THREE.BoxGeometry(0.1, 1.8, 0.1), woodMat, [0.9, 0.9, 0.9]);
+                    createPart('Post 2', new THREE.BoxGeometry(0.1, 1.8, 0.1), woodMat, [0.9, 0.9, -0.9]);
+                    createPart('Post 3', new THREE.BoxGeometry(0.1, 1.8, 0.1), woodMat, [-0.9, 0.9, 0.9]);
+                    createPart('Post 4', new THREE.BoxGeometry(0.1, 1.8, 0.1), woodMat, [-0.9, 0.9, -0.9]);
+                    createPart('Lower Bed', new THREE.BoxGeometry(2.0, 0.2, 1.8), lightWoodMat, [0, 0.3, 0]);
+                    createPart('Upper Bed', new THREE.BoxGeometry(2.0, 0.2, 1.8), lightWoodMat, [0, 1.4, 0]);
+                    break;
+                case 'nightstand':
+                    createPart('Body', new THREE.BoxGeometry(0.5, 0.5, 0.5), woodMat, [0, 0.25, 0]);
+                    createPart('Drawer Handle', new THREE.BoxGeometry(0.04, 0.08, 0.2), metalMat, [0.26, 0.25, 0]);
+                    break;
+                case 'dresser':
+                    createPart('Cabinet', new THREE.BoxGeometry(0.6, 0.9, 1.2), woodMat, [0, 0.45, 0]);
+                    createPart('Handle 1', new THREE.BoxGeometry(0.03, 0.05, 0.2), metalMat, [0.31, 0.6, 0]);
+                    createPart('Handle 2', new THREE.BoxGeometry(0.03, 0.05, 0.2), metalMat, [0.31, 0.3, 0]);
+                    break;
+                case 'sofa_modern':
+                    createPart('Seat Base', new THREE.BoxGeometry(0.9, 0.35, 2.0), secondaryFabric, [0, 0.25, 0]);
+                    createPart('Backrest', new THREE.BoxGeometry(0.3, 0.7, 2.0), secondaryFabric, [-0.3, 0.6, 0]);
+                    createPart('Armrest L', new THREE.BoxGeometry(0.9, 0.5, 0.2), secondaryFabric, [0, 0.45, 0.9]);
+                    createPart('Armrest R', new THREE.BoxGeometry(0.9, 0.5, 0.2), secondaryFabric, [0, 0.45, -0.9]);
+                    break;
+                case 'sofa_corner':
+                    createPart('Main Section', new THREE.BoxGeometry(0.9, 0.35, 2.4), secondaryFabric, [0, 0.25, 0]);
+                    createPart('Corner Section', new THREE.BoxGeometry(1.5, 0.35, 0.9), secondaryFabric, [0.3, 0.25, -0.75]);
+                    createPart('Backrest', new THREE.BoxGeometry(0.3, 0.7, 2.4), secondaryFabric, [-0.3, 0.6, 0]);
+                    break;
+                case 'sofa_leather':
+                    createPart('Seat Base', new THREE.BoxGeometry(0.95, 0.4, 2.1), leatherMat, [0, 0.28, 0]);
+                    createPart('Backrest', new THREE.BoxGeometry(0.35, 0.75, 2.1), leatherMat, [-0.3, 0.65, 0]);
+                    createPart('Armrest L', new THREE.BoxGeometry(0.95, 0.55, 0.25), leatherMat, [0, 0.48, 0.95]);
+                    createPart('Armrest R', new THREE.BoxGeometry(0.95, 0.55, 0.25), leatherMat, [0, 0.48, -0.95]);
+                    break;
+                case 'armchair':
+                    createPart('Seat', new THREE.BoxGeometry(0.8, 0.3, 0.8), secondaryFabric, [0, 0.25, 0]);
+                    createPart('Backrest', new THREE.BoxGeometry(0.25, 0.7, 0.8), secondaryFabric, [-0.25, 0.6, 0]);
+                    break;
+                case 'beanbag':
+                    createPart('Bag', new THREE.SphereGeometry(0.5, 16, 16), secondaryFabric, [0, 0.35, 0]);
+                    break;
+                case 'bench_ottoman':
+                    createPart('Cushion', new THREE.BoxGeometry(0.5, 0.25, 1.2), fabricMat, [0, 0.35, 0]);
+                    createPart('Legs', new THREE.BoxGeometry(0.4, 0.25, 1.0), blackMetalMat, [0, 0.125, 0]);
+                    break;
+                case 'wardrobe_large':
+                    createPart('Cabinet Body', new THREE.BoxGeometry(0.8, 2.2, 1.6), woodMat, [0, 1.1, 0]);
+                    createPart('Left Door', new THREE.BoxGeometry(0.05, 2.1, 0.78), darkMat, [0.4, 1.1, 0.4]);
+                    createPart('Right Door', new THREE.BoxGeometry(0.05, 2.1, 0.78), darkMat, [0.4, 1.1, -0.4]);
+                    break;
+                case 'wardrobe_sliding':
+                    createPart('Body', new THREE.BoxGeometry(0.7, 2.2, 1.8), darkMat, [0, 1.1, 0]);
+                    createPart('Glass Panel 1', new THREE.BoxGeometry(0.03, 2.0, 0.85), glassMat, [0.36, 1.1, 0.45]);
+                    break;
+                case 'tv_stand':
+                    createPart('Console', new THREE.BoxGeometry(0.5, 0.45, 1.8), woodMat, [0, 0.225, 0]);
+                    createPart('TV Screen', new THREE.BoxGeometry(0.08, 0.75, 1.3), darkMat, [0, 0.95, 0]);
+                    break;
+                case 'bookshelf':
+                    createPart('Shelf Frame', new THREE.BoxGeometry(0.4, 2.0, 1.0), woodMat, [0, 1.0, 0]);
+                    break;
+                case 'shoe_cabinet':
+                    createPart('Cabinet', new THREE.BoxGeometry(0.4, 1.0, 1.0), lightWoodMat, [0, 0.5, 0]);
+                    break;
+                case 'drawer_unit':
+                    createPart('Chest', new THREE.BoxGeometry(0.5, 0.8, 0.8), woodMat, [0, 0.4, 0]);
+                    break;
+                case 'lamp_floor':
+                    createPart('Base', new THREE.CylinderGeometry(0.25, 0.25, 0.04), metalMat, [0, 0.02, 0]);
+                    createPart('Pole', new THREE.CylinderGeometry(0.02, 0.02, 1.8), metalMat, [0, 0.94, 0]);
+                    createPart('Shade', new THREE.ConeGeometry(0.3, 0.4, 16), whiteMat, [0, 1.7, 0]);
+                    break;
+                case 'lamp_desk':
+                    createPart('Base', new THREE.CylinderGeometry(0.12, 0.12, 0.03), metalMat, [0, 0.015, 0]);
+                    createPart('Head', new THREE.BoxGeometry(0.2, 0.08, 0.25), darkMat, [0, 0.35, 0.05]);
+                    break;
+                case 'chandelier':
+                    createPart('Fixture Base', new THREE.CylinderGeometry(0.3, 0.3, 0.1), metalMat, [0, 2.7, 0]);
+                    break;
+                case 'wall_sconce':
+                    createPart('Sconce', new THREE.BoxGeometry(0.1, 0.2, 0.15), metalMat, [0, 1.5, 0]);
+                    break;
+                case 'plant_potted':
+                    createPart('Pot', new THREE.CylinderGeometry(0.25, 0.18, 0.45), darkMat, [0, 0.225, 0]);
+                    createPart('Plant Leaves', new THREE.SphereGeometry(0.35, 8, 8), plantGreen, [0, 0.55, 0]);
+                    break;
+                case 'plant_small':
+                    createPart('Pot', new THREE.CylinderGeometry(0.1, 0.08, 0.15), whiteMat, [0, 0.075, 0]);
+                    createPart('Succulent', new THREE.SphereGeometry(0.12, 6, 6), plantGreen, [0, 0.2, 0]);
+                    break;
+                case 'rug_large':
+                    createPart('Rug', new THREE.BoxGeometry(2.2, 0.01, 3.0), whiteMat, [0, 0.006, 0]);
+                    break;
+                case 'painting_art':
+                    createPart('Canvas', new THREE.BoxGeometry(0.04, 0.8, 1.2), darkMat, [0, 1.4, 0]);
+                    break;
+            }
+            group.userData = { 
+                typeId, 
+                parts, 
+                rotationDeg: 0, 
+                heightVal: 0, 
+                legsStyle: 'standard', 
+                legHeight: 0.15,
+                legColor: '#d4a373'
+            };
+            return group;
+        }
+
+        // ISPRAVLJENO: NOGARE SE DODAJU ISPOD OBJEKTA I NEMAJU PROLAZ U MINUS
+        function applyLegsStyle(obj, style, legHeight = 0.15, legColor = '#d4a373') {
+            if (!obj) return;
+            obj.userData.legsStyle = style;
+            obj.userData.legHeight = legHeight;
+            obj.userData.legColor = legColor;
+
+            const existingLegs = obj.getObjectByName("dynamic_legs_group");
+            if (existingLegs) obj.remove(existingLegs);
+
+            const childrenToShift = obj.children.filter(child => child.name !== "dynamic_legs_group");
+
+            if (style === 'standard') {
+                childrenToShift.forEach(child => {
+                    if (child.userData.basePosY !== undefined) {
+                        child.position.y = child.userData.basePosY;
+                    }
+                });
+                return;
+            }
+
+            const bbox = new THREE.Box3();
+            childrenToShift.forEach(child => bbox.expandByObject(child));
+            const size = bbox.getSize(new THREE.Vector3());
+            const halfX = size.x / 2 - 0.08;
+            const halfZ = size.z / 2 - 0.08;
+
+            childrenToShift.forEach(child => {
+                if (child.userData.basePosY === undefined) {
+                    child.userData.basePosY = child.position.y;
+                }
+                child.position.y = child.userData.basePosY + legHeight;
+            });
+
+            const legsGroup = new THREE.Group();
+            legsGroup.name = "dynamic_legs_group";
+
+            const legMat = new THREE.MeshStandardMaterial({ color: legColor, roughness: 0.5 });
+
+            if (style === 'wood') {
+                const legGeo = new THREE.CylinderGeometry(0.025, 0.015, legHeight, 8);
+                [
+                    [-halfX, legHeight / 2, -halfZ],
+                    [halfX, legHeight / 2, -halfZ],
+                    [-halfX, legHeight / 2, halfZ],
+                    [halfX, legHeight / 2, halfZ]
+                ].forEach(pos => {
+                    const leg = new THREE.Mesh(legGeo, legMat);
+                    leg.position.set(...pos);
+                    leg.castShadow = true;
+                    legsGroup.add(leg);
+                });
+            } else if (style === 'metal') {
+                const frameGeo = new THREE.BoxGeometry(size.x * 0.9, legHeight, size.z * 0.9);
+                const frame = new THREE.Mesh(frameGeo, legMat);
+                frame.position.set(0, legHeight / 2, 0);
+                frame.castShadow = true;
+                legsGroup.add(frame);
+            }
+
+            obj.add(legsGroup);
+        }
+
+        function populateCategorizedCatalog() {
+            const container = document.getElementById('catalog-categories-container');
+            container.innerHTML = '';
+            CATALOG_CATEGORIES.forEach((cat, index) => {
+                const catWrapper = document.createElement('div');
+                catWrapper.className = 'border border-white/10 bg-black/20 rounded-xl overflow-hidden transition-all';
+                const headerBtn = document.createElement('button');
+                headerBtn.className = 'w-full px-4 py-3 flex justify-between items-center text-xs font-bold hover:bg-white/10 transition-all';
+                headerBtn.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${cat.icon}" class="w-4 h-4 theme-accent-text"></i><span>${cat.name}</span></div><i data-lucide="chevron-down" class="w-4 h-4 opacity-60 transition-transform duration-200 icon-chevron"></i>`;
+                
+                const itemsGrid = document.createElement('div');
+                itemsGrid.className = `grid grid-cols-2 gap-2 p-3 border-t border-white/10 bg-black/30 ${index === 0 ? '' : 'hidden'}`;
+                cat.items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-black/40 hover:bg-white/10 border border-white/10 p-2.5 rounded-lg cursor-pointer transition-all flex flex-col items-center text-center group active:scale-95';
+                    card.innerHTML = `<div class="p-2 bg-white/5 rounded-lg mb-1.5"><i data-lucide="${item.icon}" class="w-5 h-5 theme-accent-text"></i></div><span class="text-[11px] font-medium leading-tight">${item.name}</span>`;
+                    card.addEventListener('click', () => spawnFurniture(item.id, item.name));
+                    itemsGrid.appendChild(card);
+                });
+
+                headerBtn.addEventListener('click', () => {
+                    const isHidden = itemsGrid.classList.contains('hidden');
+                    document.querySelectorAll('#catalog-categories-container .grid').forEach(g => g.classList.add('hidden'));
+                    document.querySelectorAll('.icon-chevron').forEach(i => i.style.transform = 'rotate(0deg)');
+                    if (isHidden) { itemsGrid.classList.remove('hidden'); headerBtn.querySelector('.icon-chevron').style.transform = 'rotate(180deg)'; }
+                });
+                catWrapper.appendChild(headerBtn); catWrapper.appendChild(itemsGrid); container.appendChild(catWrapper);
+            });
+            initLucideIcons();
+        }
+
+        function spawnFurniture(typeId, name) {
+            const meshGroup = createFurnitureMesh(typeId);
+            meshGroup.position.set(0, 0, 0);
+            scene.add(meshGroup);
+            placedFurniture.push(meshGroup);
+            selectObject(meshGroup, name);
+        }
+
+        function selectObject(obj, nameHint = '') {
+            selectedObject = obj;
+            if (!obj) { selectionBox.visible = false; hideInspector(); return; }
+            updateSelectionBoxAndInspector();
+            document.getElementById('selected-item-title').innerText = nameHint || 'Selected Object';
+            populateSegmentsInspector(obj);
+            showInspector();
+        }
+
+        function updateSelectionBoxAndInspector() {
+            if (!selectedObject) return;
+            const bbox = new THREE.Box3().setFromObject(selectedObject);
+            const size = bbox.getSize(new THREE.Vector3());
+            const center = bbox.getCenter(new THREE.Vector3());
+            selectionBox.geometry.dispose();
+            selectionBox.geometry = new THREE.BoxGeometry(size.x + 0.05, size.y + 0.05, size.z + 0.05);
+            selectionBox.position.copy(center);
+            selectionBox.visible = true;
+
+            let currentDeg = selectedObject.userData.rotationDeg || 0;
+            document.getElementById('btn-rotate-display').innerText = `Rotate: ${currentDeg}°`;
+
+            let currentH = selectedObject.userData.heightVal || 0;
+            document.getElementById('display-furniture-height').innerText = currentH.toFixed(2) + ' m';
+            document.getElementById('input-furniture-height').value = currentH.toFixed(2);
+        }
+
+        function populateSegmentsInspector(obj) {
+            const container = document.getElementById('segments-color-container');
+            container.innerHTML = '';
+            const parts = obj.userData.parts || {};
+            Object.keys(parts).forEach(partName => {
+                const material = parts[partName];
+                const currentHex = '#' + material.color.getHexString();
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between py-1';
+                row.innerHTML = `<span class="text-xs">${partName}</span><input type="color" value="${currentHex}" data-part="${partName}" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0 color-segment-picker">`;
+                container.appendChild(row);
+            });
+            container.querySelectorAll('.color-segment-picker').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const pName = e.target.getAttribute('data-part');
+                    if (parts[pName]) parts[pName].color.set(e.target.value);
+                });
+            });
+        }
+
+        function showInspector() { document.getElementById('inspector-panel').classList.remove('translate-x-96', 'opacity-0'); }
+        function hideInspector() { document.getElementById('inspector-panel').classList.add('translate-x-96', 'opacity-0'); }
+
+        function checkAndApplyWallSnap(obj, mode = 'wall') {
+            if (!obj || !isMagneticSnapEnabled) return;
+
+            const bbox = new THREE.Box3().setFromObject(obj);
+            const size = bbox.getSize(new THREE.Vector3());
+            const halfSizeX = size.x / 2;
+            const halfSizeZ = size.z / 2;
+            const snapThreshold = 0.6;
+
+            if (roomMode === 'box') {
+                const limitX = roomWidth / 2 - halfSizeX - wallGapDistance;
+                const limitZ = roomDepth / 2 - halfSizeZ - wallGapDistance;
+
+                let px = obj.position.x;
+                let pz = obj.position.z;
+
+                if (mode === 'corner') {
+                    obj.position.x = px > 0 ? limitX : -limitX;
+                    obj.position.z = pz > 0 ? limitZ : -limitZ;
+                    return;
+                }
+
+                const distLeft = Math.abs(px - (-limitX));
+                const distRight = Math.abs(px - limitX);
+                const distBack = Math.abs(pz - (-limitZ));
+                const distFront = Math.abs(pz - limitZ);
+
+                const minDist = Math.min(distLeft, distRight, distBack, distFront);
+
+                if (minDist < snapThreshold) {
+                    if (minDist === distLeft) obj.position.x = -limitX;
+                    else if (minDist === distRight) obj.position.x = limitX;
+                    else if (minDist === distBack) obj.position.z = -limitZ;
+                    else if (minDist === distFront) obj.position.z = limitZ;
+                }
+            } else if (roomMode === 'custom' && customWallMeshes.length > 0) {
+                let closestDist = Infinity;
+                let bestSnapPos = null;
+
+                const radius = Math.max(halfSizeX, halfSizeZ) + wallGapDistance;
+
+                for (let i = 0; i < customWallMeshes.length; i++) {
+                    const wall = customWallMeshes[i];
+                    const p1 = wall.userData.p1;
+                    const p2 = wall.userData.p2;
+
+                    const dx = p2.x - p1.x;
+                    const dz = p2.y - p1.y;
+                    const lenSq = dx * dx + dz * dz;
+                    if (lenSq === 0) continue;
+
+                    let t = ((obj.position.x - p1.x) * dx + (obj.position.z - p1.y) * dz) / lenSq;
+                    t = Math.max(0, Math.min(1, t));
+
+                    const projX = p1.x + t * dx;
+                    const projZ = p1.y + t * dz;
+
+                    const dist = Math.hypot(obj.position.x - projX, obj.position.z - projZ);
+
+                    if (dist < closestDist && dist < snapThreshold + radius) {
+                        closestDist = dist;
+
+                        const normalX = -dz / Math.hypot(dx, dz);
+                        const normalZ = dx / Math.hypot(dx, dz);
+
+                        const targetX = projX + normalX * radius;
+                        const targetZ = projZ + normalZ * radius;
+
+                        bestSnapPos = { x: targetX, z: targetZ };
+                    }
+                }
+
+                if (bestSnapPos) {
+                    obj.position.x = bestSnapPos.x;
+                    obj.position.z = bestSnapPos.z;
+                }
+            }
+        }
+
+        function initCustomizer3DView() {
+            const container = document.getElementById('customizer-3d-container');
+            customizerScene = new THREE.Scene();
+            customizerScene.background = new THREE.Color(0x020617);
+
+            customizerCamera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 50);
+            customizerCamera.position.set(3, 2, 3);
+
+            customizerRenderer = new THREE.WebGLRenderer({ antialias: true });
+            customizerRenderer.setSize(container.clientWidth, container.clientHeight);
+            customizerRenderer.setPixelRatio(window.devicePixelRatio > 1 ? window.devicePixelRatio : 1);
+            container.appendChild(customizerRenderer.domElement);
+
+            customizerControls = new THREE.OrbitControls(customizerCamera, customizerRenderer.domElement);
+            customizerControls.enableDamping = true;
+            customizerControls.target.set(0, 0.5, 0);
+
+            const ambLight = new THREE.AmbientLight(0xffffff, 0.8);
+            customizerScene.add(ambLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            dirLight.position.set(5, 10, 5);
+            customizerScene.add(dirLight);
+
+            const gridHelper = new THREE.GridHelper(6, 12, 0x6366f1, 0x334155);
+            customizerScene.add(gridHelper);
+
+            function customizerAnimate() {
+                requestAnimationFrame(customizerAnimate);
+                if (customizerControls) customizerControls.update();
+                if (customizerRenderer && customizerScene && customizerCamera) {
+                    customizerRenderer.render(customizerScene, customizerCamera);
+                }
+            }
+            customizerAnimate();
+        }
+
+        function openCustomizerModal() {
+            if (!selectedObject) return;
+
+            document.getElementById('furniture-customizer-modal').classList.remove('hidden');
+
+            if (previewObject) customizerScene.remove(previewObject);
+
+            previewObject = selectedObject.clone(true);
+            previewObject.position.set(0, 0, 0);
+            previewObject.rotation.set(0, 0, 0);
+            customizerScene.add(previewObject);
+
+            document.getElementById('customizer-item-title').innerText = `Editing: ${selectedObject.userData.typeId || 'Furniture Item'}`;
+
+            const bbox = new THREE.Box3().setFromObject(selectedObject);
+            const size = bbox.getSize(new THREE.Vector3());
+
+            document.getElementById('slider-dim-x').value = size.x.toFixed(2);
+            document.getElementById('slider-dim-y').value = size.y.toFixed(2);
+            document.getElementById('slider-dim-z').value = size.z.toFixed(2);
+            document.getElementById('lbl-dim-x').innerText = size.x.toFixed(2) + ' m';
+            document.getElementById('lbl-dim-y').innerText = size.y.toFixed(2) + ' m';
+            document.getElementById('lbl-dim-z').innerText = size.z.toFixed(2) + ' m';
+
+            document.getElementById('slider-leg-height').value = selectedObject.userData.legHeight || 0.15;
+            document.getElementById('lbl-leg-height').innerText = (selectedObject.userData.legHeight || 0.15).toFixed(2) + ' m';
+            document.getElementById('color-leg-material').value = selectedObject.userData.legColor || '#d4a373';
+
+            const partsContainer = document.getElementById('customizer-parts-list');
+            partsContainer.innerHTML = '';
+            const parts = selectedObject.userData.parts || {};
+
+            Object.keys(parts).forEach(partName => {
+                const mat = parts[partName];
+                const hexColor = '#' + mat.color.getHexString();
+
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between py-1.5 border-b border-white/5 last:border-0';
+                row.innerHTML = `
+                    <span class="text-xs font-medium text-white">${partName}</span>
+                    <div class="flex items-center gap-2">
+                        <input type="color" value="${hexColor}" data-part="${partName}" class="customizer-color-input w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0">
+                    </div>
+                `;
+                partsContainer.appendChild(row);
+            });
+
+            document.querySelectorAll('.customizer-color-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const pName = e.target.getAttribute('data-part');
+                    const colorVal = e.target.value;
+                    if (previewObject && previewObject.userData.parts && previewObject.userData.parts[pName]) {
+                        previewObject.userData.parts[pName].color.set(colorVal);
+                    }
+                    if (selectedObject && selectedObject.userData.parts && selectedObject.userData.parts[pName]) {
+                        selectedObject.userData.parts[pName].color.set(colorVal);
+                    }
+                });
+            });
+
+            const container = document.getElementById('customizer-3d-container');
+            customizerCamera.aspect = container.clientWidth / container.clientHeight;
+            customizerCamera.updateProjectionMatrix();
+            customizerRenderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function setupEventListeners() {
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            window.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('aside') || e.target.closest('header') || e.target.closest('#theme-menu-wrapper') || e.target.closest('#sketcher-modal') || e.target.closest('#furniture-customizer-modal')) return;
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(placedFurniture, true);
+                if (intersects.length > 0) {
+                    let rootObj = intersects[0].object;
+                    while (rootObj.parent && rootObj.parent !== scene) rootObj = rootObj.parent;
+                    selectObject(rootObj); isDraggingItem = true; controls.enabled = false;
+                } else { selectObject(null); }
+            });
+
+            window.addEventListener('pointermove', (e) => {
+                if (!isDraggingItem || !selectedObject) return;
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                if (raycaster.ray.intersectPlane(dragPlane, planeIntersection)) {
+                    selectedObject.position.x = planeIntersection.x;
+                    selectedObject.position.z = planeIntersection.z;
+                    
+                    checkAndApplyWallSnap(selectedObject);
+                    
+                    updateSelectionBoxAndInspector();
+                }
+            });
+
+            window.addEventListener('pointerup', () => { isDraggingItem = false; controls.enabled = true; });
+
+            document.getElementById('toggle-magnetic-snap').addEventListener('change', (e) => {
+                isMagneticSnapEnabled = e.target.checked;
+            });
+
+            const updateLegsCustom = () => {
+                const legH = parseFloat(document.getElementById('slider-leg-height').value);
+                const legC = document.getElementById('color-leg-material').value;
+                document.getElementById('lbl-leg-height').innerText = legH.toFixed(2) + ' m';
+
+                const style = selectedObject ? (selectedObject.userData.legsStyle || 'wood') : 'wood';
+                applyLegsStyle(selectedObject, style, legH, legC);
+                if (previewObject) applyLegsStyle(previewObject, style, legH, legC);
+            };
+
+            document.getElementById('slider-leg-height').addEventListener('input', updateLegsCustom);
+            document.getElementById('color-leg-material').addEventListener('input', updateLegsCustom);
+
+            document.getElementById('btn-legs-standard').onclick = () => {
+                applyLegsStyle(selectedObject, 'standard');
+                if (previewObject) applyLegsStyle(previewObject, 'standard');
+            };
+            document.getElementById('btn-legs-wood').onclick = () => {
+                const legH = parseFloat(document.getElementById('slider-leg-height').value);
+                const legC = document.getElementById('color-leg-material').value;
+                applyLegsStyle(selectedObject, 'wood', legH, legC);
+                if (previewObject) applyLegsStyle(previewObject, 'wood', legH, legC);
+            };
+            document.getElementById('btn-legs-metal').onclick = () => {
+                const legH = parseFloat(document.getElementById('slider-leg-height').value);
+                const legC = document.getElementById('color-leg-material').value;
+                applyLegsStyle(selectedObject, 'metal', legH, legC);
+                if (previewObject) applyLegsStyle(previewObject, 'metal', legH, legC);
+            };
+
+            document.getElementById('btn-open-customizer-modal').onclick = openCustomizerModal;
+            document.getElementById('btn-close-customizer').onclick = () => {
+                document.getElementById('furniture-customizer-modal').classList.add('hidden');
+            };
+            document.getElementById('btn-apply-customizer').onclick = () => {
+                document.getElementById('furniture-customizer-modal').classList.add('hidden');
+                updateSelectionBoxAndInspector();
+            };
+
+            ['x', 'y', 'z'].forEach(axis => {
+                const slider = document.getElementById(`slider-dim-${axis}`);
+                const lbl = document.getElementById(`lbl-dim-${axis}`);
+                slider.addEventListener('input', (e) => {
+                    const valMeters = parseFloat(e.target.value);
+                    lbl.innerText = valMeters.toFixed(2) + ' m';
+
+                    if (selectedObject) {
+                        const bbox = new THREE.Box3().setFromObject(selectedObject);
+                        const currentSize = bbox.getSize(new THREE.Vector3());
+                        if (currentSize[axis] > 0) {
+                            const scaleFactor = valMeters / (currentSize[axis] / selectedObject.scale[axis]);
+                            selectedObject.scale[axis] = scaleFactor;
+                            if (previewObject) previewObject.scale[axis] = scaleFactor;
+                        }
+                    }
+                    updateSelectionBoxAndInspector();
+                });
+            });
+
+            document.getElementById('btn-snap-center-room').onclick = () => {
+                if (!selectedObject) return;
+                selectedObject.position.x = 0;
+                selectedObject.position.z = 0;
+                updateSelectionBoxAndInspector();
+            };
+
+            document.getElementById('btn-snap-walls').onclick = () => {
+                if (!selectedObject) return;
+                checkAndApplyWallSnap(selectedObject, 'wall');
+                updateSelectionBoxAndInspector();
+            };
+
+            document.getElementById('btn-snap-corners').onclick = () => {
+                if (!selectedObject) return;
+                checkAndApplyWallSnap(selectedObject, 'corner');
+                updateSelectionBoxAndInspector();
+            };
+
+            document.getElementById('input-wall-gap').addEventListener('change', (e) => {
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val) && val >= 0) {
+                    wallGapDistance = val;
+                    if (selectedObject) {
+                        checkAndApplyWallSnap(selectedObject);
+                        updateSelectionBoxAndInspector();
+                    }
+                }
+            });
+
+            document.getElementById('btn-height-plus').onclick = () => {
+                if (!selectedObject) return;
+                let cur = selectedObject.userData.heightVal || 0;
+                cur = Math.round((cur + 0.1) * 10) / 10;
+                if (cur > roomHeight) cur = roomHeight;
+                selectedObject.userData.heightVal = cur;
+                selectedObject.position.y = cur;
+                updateSelectionBoxAndInspector();
+            };
+
+            document.getElementById('btn-height-minus').onclick = () => {
+                if (!selectedObject) return;
+                let cur = selectedObject.userData.heightVal || 0;
+                cur = Math.round((cur - 0.1) * 10) / 10;
+                if (cur < 0) cur = 0;
+                selectedObject.userData.heightVal = cur;
+                selectedObject.position.y = cur;
+                updateSelectionBoxAndInspector();
+            };
+
+            document.getElementById('input-furniture-height').addEventListener('input', (e) => {
+                if (!selectedObject) return;
+                let val = parseFloat(e.target.value);
+                if (!isNaN(val)) {
+                    if (val < 0) val = 0;
+                    if (val > roomHeight) val = roomHeight;
+                    selectedObject.userData.heightVal = val;
+                    selectedObject.position.y = val;
+                    updateSelectionBoxAndInspector();
+                }
+            });
+
+            document.getElementById('btn-rot-left').onclick = () => {
+                if (!selectedObject) return;
+                selectedObject.userData.rotationDeg = (selectedObject.userData.rotationDeg || 0) - 45;
+                if (selectedObject.userData.rotationDeg < 0) selectedObject.userData.rotationDeg += 360;
+                selectedObject.rotation.y = THREE.MathUtils.degToRad(selectedObject.userData.rotationDeg);
+                updateSelectionBoxAndInspector();
+            };
+
+            document.getElementById('btn-rot-right').onclick = () => {
+                if (!selectedObject) return;
+                selectedObject.userData.rotationDeg = (selectedObject.userData.rotationDeg || 0) + 45;
+                if (selectedObject.userData.rotationDeg >= 360) selectedObject.userData.rotationDeg -= 360;
+                selectedObject.rotation.y = THREE.MathUtils.degToRad(selectedObject.userData.rotationDeg);
+                updateSelectionBoxAndInspector();
+            };
+
+            const nudgeStep = 0.2;
+            document.getElementById('btn-nudge-up').onclick = () => {
+                if (!selectedObject) return;
+                selectedObject.position.z -= nudgeStep;
+                updateSelectionBoxAndInspector();
+            };
+            document.getElementById('btn-nudge-down').onclick = () => {
+                if (!selectedObject) return;
+                selectedObject.position.z += nudgeStep;
+                updateSelectionBoxAndInspector();
+            };
+            document.getElementById('btn-nudge-left').onclick = () => {
+                if (!selectedObject) return;
+                selectedObject.position.x -= nudgeStep;
+                updateSelectionBoxAndInspector();
+            };
+            document.getElementById('btn-nudge-right').onclick = () => {
+                if (!selectedObject) return;
+                selectedObject.position.x += nudgeStep;
+                updateSelectionBoxAndInspector();
+            };
+
+            document.getElementById('tab-catalog').addEventListener('click', () => {
+                document.getElementById('tab-catalog').className = 'flex-1 py-3 text-sm font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-2 transition-all';
+                document.getElementById('tab-room').className = 'flex-1 py-3 text-sm font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-2 transition-all';
+                document.getElementById('panel-catalog').classList.remove('hidden'); document.getElementById('panel-room').classList.add('hidden');
+            });
+
+            document.getElementById('tab-room').addEventListener('click', () => {
+                document.getElementById('tab-room').className = 'flex-1 py-3 text-sm font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-2 transition-all';
+                document.getElementById('tab-catalog').className = 'flex-1 py-3 text-sm font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-2 transition-all';
+                document.getElementById('panel-room').classList.remove('hidden'); document.getElementById('panel-catalog').classList.add('hidden');
+            });
+
+            document.getElementById('btn-mode-box').addEventListener('click', () => {
+                roomMode = 'box';
+                document.getElementById('btn-mode-box').className = 'py-2 px-3 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all';
+                document.getElementById('btn-mode-custom').className = 'py-2 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all';
+                document.getElementById('box-dimensions-wrapper').classList.remove('hidden');
+                buildRoom();
+            });
+
+            document.getElementById('btn-close-sketch').addEventListener('click', () => {
+                document.getElementById('sketcher-modal').classList.add('hidden');
+            });
+
+            const themeBtn = document.getElementById('btn-theme-toggle');
+            const themeDropdown = document.getElementById('theme-dropdown');
+            themeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themeDropdown.classList.toggle('hidden');
+            });
+            window.addEventListener('click', () => {
+                themeDropdown.classList.add('hidden');
+            });
+
+            document.querySelectorAll('#theme-dropdown button[data-theme]').forEach(btn => {
+                btn.addEventListener('click', (e) => { 
+                    document.body.className = e.currentTarget.getAttribute('data-theme'); 
+                    themeDropdown.classList.add('hidden');
+                });
+            });
+
+            document.getElementById('btn-zoom-in').addEventListener('click', () => camera.position.multiplyScalar(0.85));
+            document.getElementById('btn-zoom-out').addEventListener('click', () => camera.position.multiplyScalar(1.15));
+
+            document.getElementById('btn-apply-room').addEventListener('click', () => {
+                const w = parseFloat(document.getElementById('input-room-width').value);
+                const d = parseFloat(document.getElementById('input-room-depth').value);
+                const h = parseFloat(document.getElementById('input-room-height').value);
+                if (w > 1 && d > 1 && h > 1) { roomWidth = w; roomDepth = d; roomHeight = h; buildRoom(); }
+            });
+
+            ['color-walls', 'color-floor', 'color-ceiling', 'color-grid-floor', 'color-grid-wall', 'toggle-walls', 'toggle-ceiling', 'toggle-grid', 'toggle-wall-grid'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', buildRoom);
+                    el.addEventListener('change', buildRoom);
+                }
+            });
+
+            document.getElementById('btn-close-inspector').addEventListener('click', () => selectObject(null));
+            document.getElementById('btn-delete-item').addEventListener('click', () => {
+                if (!selectedObject) return;
+                scene.remove(selectedObject);
+                placedFurniture = placedFurniture.filter(item => item !== selectedObject);
+                selectObject(null);
+            });
+            document.getElementById('btn-screenshot').addEventListener('click', () => {
+                selectionBox.visible = false;
+                renderer.render(scene, camera);
+                const link = document.createElement('a'); link.download = 'roomswap-3d-design.png';
+                link.href = renderer.domElement.toDataURL('image/png'); link.click();
+                selectionBox.visible = true;
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            const camPos = camera.position;
+            const ceilingVisible = camPos.y < roomHeight;
+
+            if (roomMode === 'box') {
+                const frontVisible = camPos.z < (roomDepth / 2);
+                const backVisible = camPos.z > (-roomDepth / 2);
+                const leftVisible = camPos.x > (-roomWidth / 2);
+                const rightVisible = camPos.x < (roomWidth / 2);
+
+                if (walls.front) walls.front.visible = frontVisible;
+                if (walls.back) walls.back.visible = backVisible;
+                if (walls.left) walls.left.visible = leftVisible;
+                if (walls.right) walls.right.visible = rightVisible;
+            } else if (roomMode === 'custom' && customWallMeshes.length > 0) {
+                customWallMeshes.forEach(wall => {
+                    const wx = wall.userData.midX;
+                    const wz = wall.userData.midZ;
+                    const dot = (camPos.x * wx) + (camPos.z * wz);
+                    wall.visible = dot < 1.0;
+                });
+            }
+
+            if (ceilingMesh) ceilingMesh.visible = ceilingVisible;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>

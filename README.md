@@ -1,4 +1,4 @@
-## Hi there 👋
+## RoomSwap — A modern room design tool for creating, customizing, and visualizing room layouts in 2D and 3D.
 
 <!--
 **roomswap/RoomSwap** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoomSwap 3D Studio - Ultimate Final</title>
+    <title>RoomSwap 3D Studio</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons CDN -->
@@ -16,7 +16,7 @@
     <style>
         :root {
             --bg-gradient: radial-gradient(circle at 50% 40%, #1e1b4b 0%, #090d16 65%, #020408 100%);
-            --panel-bg: rgba(15, 23, 42, 0.88);
+            --panel-bg: rgba(15, 23, 42, 0.85);
             --accent-color: #6366f1;
             --accent-hover: #4f46e5;
             --border-color: rgba(255, 255, 255, 0.1);
@@ -26,7 +26,7 @@
 
         body.theme-emerald {
             --bg-gradient: radial-gradient(circle at 50% 40%, #062c22 0%, #021a14 65%, #010f0b 100%);
-            --panel-bg: rgba(6, 44, 34, 0.9);
+            --panel-bg: rgba(6, 44, 34, 0.88);
             --accent-color: #10b981;
             --accent-hover: #059669;
             --border-color: rgba(16, 185, 129, 0.2);
@@ -36,7 +36,7 @@
 
         body.theme-ocean {
             --bg-gradient: radial-gradient(circle at 50% 40%, #0f2d4a 0%, #07192b 65%, #030d17 100%);
-            --panel-bg: rgba(15, 45, 74, 0.9);
+            --panel-bg: rgba(15, 45, 74, 0.88);
             --accent-color: #0284c7;
             --accent-hover: #0369a1;
             --border-color: rgba(56, 189, 248, 0.2);
@@ -46,7 +46,7 @@
 
         body.theme-rose {
             --bg-gradient: radial-gradient(circle at 50% 40%, #3b112c 0%, #210719 65%, #0d020a 100%);
-            --panel-bg: rgba(59, 17, 44, 0.9);
+            --panel-bg: rgba(59, 17, 44, 0.88);
             --accent-color: #be123c;
             --accent-hover: #9f1239;
             --border-color: rgba(244, 63, 94, 0.2);
@@ -56,7 +56,7 @@
 
         body.theme-light {
             --bg-gradient: radial-gradient(circle at 50% 40%, #334155 0%, #1e293b 65%, #0f172a 100%);
-            --panel-bg: rgba(30, 41, 59, 0.92);
+            --panel-bg: rgba(30, 41, 59, 0.9);
             --accent-color: #38bdf8;
             --accent-hover: #0284c7;
             --border-color: rgba(255, 255, 255, 0.15);
@@ -93,27 +93,16 @@
         .theme-accent-text { color: var(--accent-color) !important; }
         .theme-accent-border { border-color: var(--accent-color) !important; }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
 
+        /* Mobile adjustments */
         @media(max-width: 768px) {
-            #main-sidebar {
-                width: calc(100vw - 24px) !important;
-                left: 12px !important;
-                right: 12px !important;
-                max-height: 55vh !important;
-                top: 70px !important;
-                bottom: auto !important;
-            }
-            #inspector-panel {
-                width: calc(100vw - 24px) !important;
-                right: 12px !important;
-                left: 12px !important;
-                top: auto !important;
-                bottom: 12px !important;
-                max-height: 45vh !important;
+            aside#inspector-panel, aside.absolute.top-20.left-4 {
+                width: calc(100vw - 32px) !important;
+                max-height: 60vh !important;
             }
         }
     </style>
@@ -124,124 +113,134 @@
     <div id="webgl-container"></div>
 
     <!-- UI Overlay Header -->
-    <header class="absolute top-3 left-3 right-3 flex justify-between items-center pointer-events-none z-10 gap-2">
-        <div class="glass-panel px-3 py-2 rounded-2xl flex items-center gap-2.5 pointer-events-auto shadow-2xl">
-            <div class="theme-accent-bg p-1.5 rounded-xl text-white">
-                <i data-lucide="box" class="w-4 h-4"></i>
+    <header class="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
+        <div class="glass-panel px-4 py-2.5 rounded-2xl flex items-center gap-3 pointer-events-auto shadow-2xl">
+            <div class="theme-accent-bg p-2 rounded-xl text-white">
+                <i data-lucide="box" class="w-5 h-5"></i>
             </div>
             <div>
-                <h1 class="font-bold text-xs md:text-base leading-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">RoomSwap 3D</h1>
-                <p class="text-[9px] md:text-[10px] opacity-75">Studio Designer</p>
+                <h1 class="font-bold text-sm md:text-lg leading-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">RoomSwap 3D Studio</h1>
+                <p class="text-[10px] md:text-xs opacity-75">Advanced Interior Designer</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-1.5 pointer-events-auto">
-            <!-- Human View Button -->
-            <button id="btn-human-view" class="glass-panel hover:bg-white/10 text-white px-2.5 py-2 rounded-xl flex items-center gap-1.5 text-xs font-medium transition-all active:scale-95 shadow-xl" title="Human Eye Level View">
-                <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-400"></i>
-                <span class="hidden sm:inline">Human View</span>
+        <div class="glass-panel px-3 py-1.5 rounded-xl text-xs hidden md:flex items-center gap-4 pointer-events-auto shadow-xl">
+            <div class="flex items-center gap-1.5"><i data-lucide="mouse-pointer-click" class="w-4 h-4 theme-accent-text"></i> Left Click: Select / Drag</div>
+            <div class="flex items-center gap-1.5"><i data-lucide="rotate-3d" class="w-4 h-4 theme-accent-text"></i> Right Click + Drag: Rotate Camera</div>
+        </div>
+
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <!-- Quick Undo & Delete All Buttons -->
+            <button id="btn-quick-undo" class="glass-panel hover:bg-white/10 text-white p-2.5 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-xl" title="Undo Last Item">
+                <i data-lucide="rotate-ccw" class="w-4 h-4 text-sky-400"></i>
+            </button>
+            <button id="btn-quick-delete-all" class="glass-panel hover:bg-white/10 text-white p-2.5 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-xl" title="Delete All Furniture">
+                <i data-lucide="trash-2" class="w-4 h-4 text-rose-400"></i>
             </button>
 
-            <button id="btn-quick-undo" class="glass-panel hover:bg-white/10 text-white p-2 rounded-xl flex items-center justify-center text-xs transition-all active:scale-95 shadow-xl" title="Undo Last Item">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-sky-400"></i>
-            </button>
-            <button id="btn-quick-delete-all" class="glass-panel hover:bg-white/10 text-white p-2 rounded-xl flex items-center justify-center text-xs transition-all active:scale-95 shadow-xl" title="Delete All Furniture">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-400"></i>
-            </button>
+            <div class="flex items-center gap-1 glass-panel p-1 rounded-xl shadow-xl hidden sm:flex">
+                <button id="btn-zoom-in" class="p-2 hover:bg-white/10 rounded-lg transition-all active:scale-95" title="Zoom In">
+                    <i data-lucide="zoom-in" class="w-4 h-4 theme-accent-text"></i>
+                </button>
+                <button id="btn-zoom-out" class="p-2 hover:bg-white/10 rounded-lg transition-all active:scale-95" title="Zoom Out">
+                    <i data-lucide="zoom-out" class="w-4 h-4 theme-accent-text"></i>
+                </button>
+            </div>
 
-            <button id="btn-screenshot" class="glass-panel hover:bg-white/10 text-white px-2.5 py-2 rounded-xl flex items-center gap-1.5 text-xs font-medium transition-all active:scale-95 shadow-xl" title="Export Snapshot">
-                <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span class="hidden sm:inline">Snapshot</span>
+            <button id="btn-screenshot" class="glass-panel hover:bg-white/10 text-white px-3 py-2 md:px-4 md:py-2.5 rounded-xl flex items-center gap-2 text-xs md:text-sm font-medium transition-all active:scale-95 shadow-xl">
+                <i data-lucide="camera" class="w-4 h-4 text-emerald-400"></i>
+                <span class="hidden sm:inline">Export Snapshot</span>
             </button>
         </div>
     </header>
 
     <!-- Sidebar Left -->
-    <aside id="main-sidebar" class="absolute top-16 left-3 bottom-3 w-72 glass-panel rounded-2xl flex flex-col overflow-hidden z-10 shadow-2xl transition-all duration-300">
+    <aside id="main-sidebar" class="absolute top-20 left-4 bottom-4 w-80 glass-panel rounded-2xl flex flex-col overflow-hidden z-10 shadow-2xl transition-all duration-300">
         <div class="flex border-b border-white/10 bg-black/20 items-center">
-            <button id="tab-catalog" class="flex-1 py-2.5 text-xs font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-1 transition-all">
-                <i data-lucide="folder" class="w-3.5 h-3.5"></i> Catalog
+            <button id="tab-catalog" class="flex-1 py-3 text-xs md:text-sm font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-1.5 transition-all">
+                <i data-lucide="folder" class="w-4 h-4"></i> Catalog
             </button>
-            <button id="tab-room" class="flex-1 py-2.5 text-xs font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-1 transition-all">
-                <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Setup
+            <button id="tab-room" class="flex-1 py-3 text-xs md:text-sm font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-1.5 transition-all">
+                <i data-lucide="sliders" class="w-4 h-4"></i> Room Setup
             </button>
-            <button id="btn-toggle-sidebar" class="px-2.5 py-2.5 text-slate-400 hover:text-white transition-all" title="Minimize / Expand Panel">
-                <i data-lucide="minimize-2" class="w-3.5 h-3.5" id="sidebar-icon-toggle"></i>
+            <!-- Minimize Sidebar Toggle Button -->
+            <button id="btn-toggle-sidebar" class="px-3 py-3 text-slate-400 hover:text-white transition-all" title="Minimize / Expand Panel">
+                <i data-lucide="minimize-2" class="w-4 h-4" id="sidebar-icon-toggle"></i>
             </button>
         </div>
 
         <div id="sidebar-content-wrap" class="flex-1 flex flex-col overflow-hidden">
-            <div id="panel-catalog" class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2.5">
-                <p class="text-[11px] font-semibold opacity-60 uppercase tracking-wider mb-1">Select group:</p>
-                <div id="catalog-groups-container" class="space-y-2.5"></div>
+            <div id="panel-catalog" class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
+                <p class="text-xs font-semibold opacity-60 uppercase tracking-wider mb-2">Select main group:</p>
+                <div id="catalog-groups-container" class="space-y-3"></div>
             </div>
 
-            <div id="panel-room" class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-4 hidden">
+            <div id="panel-room" class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-5 hidden">
                 <div>
-                    <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Room Layout Mode</label>
+                    <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Room Layout Mode</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button id="btn-mode-box" class="py-1.5 px-2 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all">Standard Box</button>
-                        <button id="btn-mode-custom" class="py-1.5 px-2 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all">Draw Custom 2D</button>
+                        <button id="btn-mode-box" class="py-2 px-3 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all">Standard Box</button>
+                        <button id="btn-mode-custom" class="py-2 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all">Draw Custom 2D</button>
                     </div>
                 </div>
 
                 <div id="box-dimensions-wrapper">
-                    <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Exact Dimensions</label>
-                    <div class="space-y-2.5 bg-black/20 p-2.5 rounded-xl border border-white/10">
+                    <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Exact Room Dimensions</label>
+                    <div class="space-y-3 bg-black/20 p-3 rounded-xl border border-white/10">
                         <div>
-                            <div class="flex justify-between text-[11px] mb-0.5"><span>Width (X) in meters</span></div>
-                            <input id="input-room-width" type="number" min="1.5" max="30" step="0.1" value="5.0" class="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none font-mono">
+                            <div class="flex justify-between text-xs mb-1"><span>Width (X) in meters</span></div>
+                            <input id="input-room-width" type="number" min="1.5" max="30" step="0.1" value="5.0" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[11px] mb-0.5"><span>Depth (Z) in meters</span></div>
-                            <input id="input-room-depth" type="number" min="1.5" max="30" step="0.1" value="5.0" class="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none font-mono">
+                            <div class="flex justify-between text-xs mb-1"><span>Depth (Z) in meters</span></div>
+                            <input id="input-room-depth" type="number" min="1.5" max="30" step="0.1" value="5.0" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[11px] mb-0.5"><span>Height (Y) in meters</span></div>
-                            <input id="input-room-height" type="number" min="1.5" max="10" step="0.1" value="2.8" class="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none font-mono">
+                            <div class="flex justify-between text-xs mb-1"><span>Height (Y) in meters</span></div>
+                            <input id="input-room-height" type="number" min="1.5" max="10" step="0.1" value="2.8" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono">
                         </div>
-                        <button id="btn-apply-room" class="w-full mt-1.5 py-1.5 theme-accent-bg text-white rounded-lg text-xs font-semibold transition-all shadow-md">Apply Dimensions</button>
+                        <button id="btn-apply-room" class="w-full mt-2 py-2 theme-accent-bg text-white rounded-lg text-xs font-semibold transition-all shadow-md">Apply Dimensions</button>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Colors, Paints & Wall Materials</label>
-                    <div class="space-y-2.5 bg-black/20 p-2.5 rounded-xl border border-white/10">
-                        <div class="flex justify-between items-center"><span class="text-xs">Global Wall Color</span><input id="color-walls" type="color" value="#f1f5f9" class="w-7 h-7 rounded-lg bg-transparent cursor-pointer border-0"></div>
-                        <div class="flex justify-between items-center"><span class="text-xs">Floor Color</span><input id="color-floor" type="color" value="#8D5524" class="w-7 h-7 rounded-lg bg-transparent cursor-pointer border-0"></div>
-                        <div class="flex justify-between items-center"><span class="text-xs">Ceiling Color</span><input id="color-ceiling" type="color" value="#ffffff" class="w-7 h-7 rounded-lg bg-transparent cursor-pointer border-0"></div>
+                    <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Colors, Paints & Individual Wall Materials</label>
+                    <div class="space-y-3 bg-black/20 p-3 rounded-xl border border-white/10">
+                        <div class="flex justify-between items-center"><span class="text-xs">Global Wall Color</span><input id="color-walls" type="color" value="#f1f5f9" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0"></div>
+                        <div class="flex justify-between items-center"><span class="text-xs">Floor Color</span><input id="color-floor" type="color" value="#8D5524" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0"></div>
+                        <div class="flex justify-between items-center"><span class="text-xs">Ceiling Color</span><input id="color-ceiling" type="color" value="#ffffff" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0"></div>
                         
-                        <hr class="border-white/10 my-1.5">
-                        <label class="flex items-center justify-between text-xs cursor-pointer"><span>Tile Material / Bathroom Walls</span><input id="toggle-wall-tiles" type="checkbox" class="w-4 h-4 rounded cursor-pointer"></label>
+                        <hr class="border-white/10 my-2">
+                        <label class="flex items-center justify-between text-xs cursor-pointer"><span>Tile Material / Bathroom Wall Mode</span><input id="toggle-wall-tiles" type="checkbox" class="w-4 h-4 rounded cursor-pointer"></label>
 
-                        <div id="individual-wall-colors" class="space-y-1.5 pt-1.5 border-t border-white/10">
-                            <span class="text-[10px] font-semibold opacity-70 block">Individual Wall Colors:</span>
-                            <div class="flex justify-between items-center text-xs"><span>Front Wall</span><input id="color-wall-front" type="color" value="#f1f5f9" class="w-5 h-5 rounded bg-transparent cursor-pointer border-0"></div>
-                            <div class="flex justify-between items-center text-xs"><span>Back Wall</span><input id="color-wall-back" type="color" value="#f1f5f9" class="w-5 h-5 rounded bg-transparent cursor-pointer border-0"></div>
-                            <div class="flex justify-between items-center text-xs"><span>Left Wall</span><input id="color-wall-left" type="color" value="#f1f5f9" class="w-5 h-5 rounded bg-transparent cursor-pointer border-0"></div>
-                            <div class="flex justify-between items-center text-xs"><span>Right Wall</span><input id="color-wall-right" type="color" value="#f1f5f9" class="w-5 h-5 rounded bg-transparent cursor-pointer border-0"></div>
+                        <div id="individual-wall-colors" class="space-y-2 pt-2 border-t border-white/10">
+                            <span class="text-[11px] font-semibold opacity-70 block">Individual Wall Colors:</span>
+                            <div class="flex justify-between items-center text-xs"><span>Front Wall</span><input id="color-wall-front" type="color" value="#f1f5f9" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0"></div>
+                            <div class="flex justify-between items-center text-xs"><span>Back Wall</span><input id="color-wall-back" type="color" value="#f1f5f9" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0"></div>
+                            <div class="flex justify-between items-center text-xs"><span>Left Wall</span><input id="color-wall-left" type="color" value="#f1f5f9" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0"></div>
+                            <div class="flex justify-between items-center text-xs"><span>Right Wall</span><input id="color-wall-right" type="color" value="#f1f5f9" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0"></div>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Toggles & Controls</label>
-                    <div class="space-y-2.5 bg-black/20 p-2.5 rounded-xl border border-white/10">
+                    <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Toggles & Structural Controls</label>
+                    <div class="space-y-3 bg-black/20 p-3 rounded-xl border border-white/10">
                         <label class="flex items-center justify-between text-xs cursor-pointer"><span>Enable Walls</span><input id="toggle-walls" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer"></label>
                         <label class="flex items-center justify-between text-xs cursor-pointer"><span>Enable Ceiling</span><input id="toggle-ceiling" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer"></label>
                         
-                        <div id="grid-controls-wrapper" class="space-y-2 pt-1.5 border-t border-white/10">
+                        <div id="grid-controls-wrapper" class="space-y-3 pt-2 border-t border-white/10">
                             <div class="flex items-center justify-between text-xs">
                                 <label class="flex items-center gap-2 cursor-pointer"><input id="toggle-grid" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer"><span>Floor Grid</span></label>
-                                <input id="color-grid-floor" type="color" value="#6366f1" class="w-5 h-5 rounded bg-transparent cursor-pointer border-0">
+                                <input id="color-grid-floor" type="color" value="#6366f1" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0">
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <label class="flex items-center gap-2 cursor-pointer"><input id="toggle-wall-grid" type="checkbox" class="w-4 h-4 rounded cursor-pointer"><span>Wall Grid</span></label>
-                                <input id="color-grid-wall" type="color" value="#38bdf8" class="w-5 h-5 rounded bg-transparent cursor-pointer border-0">
+                                <input id="color-grid-wall" type="color" value="#38bdf8" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0">
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <label class="flex items-center gap-2 cursor-pointer"><input id="toggle-ceiling-grid" type="checkbox" class="w-4 h-4 rounded cursor-pointer"><span>Ceiling Grid</span></label>
-                                <input id="color-grid-ceiling" type="color" value="#818cf8" class="w-5 h-5 rounded bg-transparent cursor-pointer border-0">
+                                <input id="color-grid-ceiling" type="color" value="#818cf8" class="w-6 h-6 rounded bg-transparent cursor-pointer border-0">
                             </div>
                         </div>
                     </div>
@@ -251,48 +250,48 @@
     </aside>
 
     <!-- Custom 2D Sketcher Modal -->
-    <div id="sketcher-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center hidden p-4">
+    <div id="sketcher-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center hidden p-6">
         <div class="glass-panel w-full max-w-4xl h-[85vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-white/20">
-            <div class="flex justify-between items-center px-5 py-3 border-b border-white/10 bg-black/40">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/40">
                 <div>
-                    <h2 class="font-bold text-sm text-white">Custom Room 2D Sketcher</h2>
-                    <p class="text-[11px] opacity-70">Type length (m) & Press ENTER, or set custom angle (°).</p>
+                    <h2 class="font-bold text-base text-white">Custom Room 2D Sketcher</h2>
+                    <p class="text-xs opacity-70">Type length (m) & Press ENTER, or set custom angle (°).</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button id="btn-add-next-room" class="px-2.5 py-1 bg-indigo-600/35 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-400/30 rounded-lg text-xs font-semibold transition-all flex items-center gap-1">
-                        <i data-lucide="plus" class="w-3 h-3"></i> More Rooms
+                <div class="flex items-center gap-3">
+                    <button id="btn-add-next-room" class="px-3 py-1.5 bg-indigo-600/35 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-400/30 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> More Rooms (Multi-Room)
                     </button>
-                    <button id="btn-undo-vertex" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-medium transition-all">Undo</button>
-                    <button id="btn-close-loop" class="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-xs font-medium transition-all">Close Loop</button>
-                    <button id="btn-clear-sketch" class="px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-lg text-xs font-medium transition-all">Clear</button>
-                    <button id="btn-finish-sketch" class="px-3 py-1 theme-accent-bg text-white rounded-lg text-xs font-semibold shadow-md transition-all">Generate</button>
-                    <button id="btn-close-sketch" class="p-1 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
+                    <button id="btn-undo-vertex" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-medium transition-all">Undo Point</button>
+                    <button id="btn-close-loop" class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-xs font-medium transition-all">Close Loop</button>
+                    <button id="btn-clear-sketch" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-lg text-xs font-medium transition-all">Clear All</button>
+                    <button id="btn-finish-sketch" class="px-4 py-1.5 theme-accent-bg text-white rounded-lg text-xs font-semibold shadow-md transition-all">Generate 3D Room</button>
+                    <button id="btn-close-sketch" class="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
             </div>
 
-            <div class="px-5 py-2 bg-black/20 border-b border-white/10 flex items-center gap-4 text-xs flex-wrap">
-                <div class="flex items-center gap-1.5">
+            <div class="px-6 py-2.5 bg-black/20 border-b border-white/10 flex items-center gap-6 text-xs flex-wrap">
+                <div class="flex items-center gap-2">
                     <span class="opacity-70">Angle Snapping:</span>
-                    <span class="font-mono theme-accent-text font-bold">15° active</span>
+                    <span class="font-mono theme-accent-text font-bold">15° Increments active</span>
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2">
                     <span class="opacity-70 font-semibold text-emerald-300">Length (m):</span>
-                    <input id="input-sketch-length" type="number" step="0.1" placeholder="e.g. 5" class="w-20 bg-black/80 border-2 border-emerald-500 rounded-lg px-2 py-0.5 text-white font-mono font-bold focus:outline-none focus:border-emerald-400">
+                    <input id="input-sketch-length" type="number" step="0.1" placeholder="e.g. 5" class="w-24 bg-black/80 border-2 border-emerald-500 rounded-lg px-2.5 py-1 text-white font-mono font-bold focus:outline-none focus:border-emerald-400 shadow-inner">
                 </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="opacity-70 font-semibold text-sky-300">Angle (°):</span>
-                    <input id="input-custom-angle" type="number" step="1" placeholder="e.g. 35" class="w-16 bg-black/80 border-2 border-sky-500 rounded-lg px-2 py-0.5 text-white font-mono font-bold focus:outline-none focus:border-sky-400">
-                    <button id="btn-apply-custom-angle" class="px-2.5 py-0.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-semibold transition-all shadow">Set</button>
+                <div class="flex items-center gap-2">
+                    <span class="opacity-70 font-semibold text-sky-300">Custom Angle (°):</span>
+                    <input id="input-custom-angle" type="number" step="1" placeholder="e.g. 35" class="w-20 bg-black/80 border-2 border-sky-500 rounded-lg px-2 py-1 text-white font-mono font-bold focus:outline-none focus:border-sky-400 shadow-inner">
+                    <button id="btn-apply-custom-angle" class="px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-semibold transition-all shadow">Set Angle</button>
                 </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="opacity-70 font-semibold text-amber-300">Height (m):</span>
-                    <input id="input-custom-room-height" type="number" step="0.1" value="2.8" min="1.0" max="10.0" class="w-16 bg-black/80 border-2 border-amber-500 rounded-lg px-2 py-0.5 text-white font-mono font-bold focus:outline-none focus:border-amber-400">
+                <div class="flex items-center gap-2">
+                    <span class="opacity-70 font-semibold text-amber-300">Custom Height (m):</span>
+                    <input id="input-custom-room-height" type="number" step="0.1" value="2.8" min="1.0" max="10.0" class="w-20 bg-black/80 border-2 border-amber-500 rounded-lg px-2 py-1 text-white font-mono font-bold focus:outline-none focus:border-amber-400 shadow-inner">
                 </div>
             </div>
 
             <div class="flex-1 relative bg-slate-950 overflow-hidden cursor-crosshair" id="sketcher-canvas-container">
                 <canvas id="sketcher-canvas" class="w-full h-full block"></canvas>
-                <div id="sketcher-tooltip" class="absolute bottom-3 left-3 glass-panel px-2.5 py-1 rounded-lg text-xs font-mono pointer-events-none">
+                <div id="sketcher-tooltip" class="absolute bottom-4 left-4 glass-panel px-3 py-1.5 rounded-lg text-xs font-mono pointer-events-none">
                     Length: 0.00m | Angle: 0°
                 </div>
             </div>
@@ -302,74 +301,74 @@
     <!-- Advanced 3D Furniture Customizer Modal -->
     <div id="furniture-customizer-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center hidden p-4 md:p-8">
         <div class="glass-panel w-full max-w-5xl h-[88vh] rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-white/20">
-            <div class="w-full md:w-1/2 h-56 md:h-full bg-slate-950 relative flex flex-col border-b md:border-b-0 md:border-r border-white/10">
-                <div class="absolute top-3 left-3 z-10 glass-panel px-2.5 py-1 rounded-xl text-xs font-bold text-white flex items-center gap-1.5">
-                    <i data-lucide="eye" class="w-3.5 h-3.5 theme-accent-text"></i> Live 3D Preview
+            <div class="w-full md:w-1/2 h-64 md:h-full bg-slate-950 relative flex flex-col border-b md:border-b-0 md:border-r border-white/10">
+                <div class="absolute top-4 left-4 z-10 glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-2">
+                    <i data-lucide="eye" class="w-4 h-4 theme-accent-text"></i> Live 3D Preview
                 </div>
                 <div id="customizer-3d-container" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
-                <div class="absolute bottom-3 left-3 right-3 glass-panel p-2 rounded-xl text-[10px] opacity-80 text-center pointer-events-none">
+                <div class="absolute bottom-4 left-4 right-4 glass-panel p-2.5 rounded-xl text-[11px] opacity-80 text-center pointer-events-none">
                     Drag to rotate view | Scroll to zoom
                 </div>
             </div>
 
             <div class="w-full md:w-1/2 flex-1 flex flex-col overflow-hidden bg-black/40">
-                <div class="flex justify-between items-center px-5 py-3 border-b border-white/10 bg-black/30">
+                <div class="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/30">
                     <div>
-                        <h2 id="customizer-item-title" class="font-bold text-sm text-white">Advanced Furniture Studio</h2>
-                        <p class="text-[11px] opacity-70">Customize dimensions in meters (m), materials, and legs.</p>
+                        <h2 id="customizer-item-title" class="font-bold text-base text-white">Advanced Furniture Studio</h2>
+                        <p class="text-xs opacity-70">Customize dimensions in meters (m), materials, and legs.</p>
                     </div>
-                    <button id="btn-close-customizer" class="p-1 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
+                    <button id="btn-close-customizer" class="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-5">
+                <div class="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-6">
                     <div>
-                        <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-2">Exact Item Dimensions (Meters)</label>
-                        <div class="space-y-2.5 bg-black/20 p-3 rounded-xl border border-white/10">
+                        <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-3">Exact Item Dimensions (Meters)</label>
+                        <div class="space-y-3 bg-black/20 p-4 rounded-xl border border-white/10">
                             <div>
-                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Width (X)</span><span id="lbl-dim-x" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
+                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Width (X in meters)</span><span id="lbl-dim-x" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
                                 <input id="slider-dim-x" type="range" min="0.2" max="5.0" step="0.05" value="1.0" class="w-full accent-indigo-500 cursor-pointer">
                             </div>
                             <div>
-                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Height (Y)</span><span id="lbl-dim-y" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
+                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Height (Y in meters)</span><span id="lbl-dim-y" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
                                 <input id="slider-dim-y" type="range" min="0.2" max="4.0" step="0.05" value="1.0" class="w-full accent-indigo-500 cursor-pointer">
                             </div>
                             <div>
-                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Depth (Z)</span><span id="lbl-dim-z" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
+                                <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Depth (Z in meters)</span><span id="lbl-dim-z" class="font-mono theme-accent-text font-bold">1.00 m</span></div>
                                 <input id="slider-dim-z" type="range" min="0.2" max="5.0" step="0.05" value="1.0" class="w-full accent-indigo-500 cursor-pointer">
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-2">Parts Material & Color Editor</label>
-                        <div id="customizer-parts-list" class="space-y-2 bg-black/20 p-3 rounded-xl border border-white/10"></div>
+                        <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-3">Parts Material & Color Editor</label>
+                        <div id="customizer-parts-list" class="space-y-2.5 bg-black/20 p-4 rounded-xl border border-white/10"></div>
                     </div>
 
                     <div>
-                        <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-2">Legs & Base Style</label>
-                        <div class="space-y-2.5 bg-black/20 p-3 rounded-xl border border-white/10">
-                            <div class="grid grid-cols-3 gap-1.5">
-                                <button id="btn-legs-standard" class="py-1.5 px-1.5 bg-black/40 hover:bg-white/10 border theme-accent-border rounded-lg text-[11px] font-medium text-white transition-all">Standard</button>
-                                <button id="btn-legs-wood" class="py-1.5 px-1.5 bg-black/20 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all opacity-80 hover:opacity-100">Wooden</button>
-                                <button id="btn-legs-metal" class="py-1.5 px-1.5 bg-black/20 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all opacity-80 hover:opacity-100">Metal</button>
+                        <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-3">Legs & Base Style Customization</label>
+                        <div class="space-y-3 bg-black/20 p-4 rounded-xl border border-white/10">
+                            <div class="grid grid-cols-3 gap-2">
+                                <button id="btn-legs-standard" class="py-2 px-2 bg-black/40 hover:bg-white/10 border theme-accent-border rounded-lg text-xs font-medium text-white transition-all">None / Standard</button>
+                                <button id="btn-legs-wood" class="py-2 px-2 bg-black/20 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-all opacity-80 hover:opacity-100">Wooden Pegs</button>
+                                <button id="btn-legs-metal" class="py-2 px-2 bg-black/20 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-all opacity-80 hover:opacity-100">Metal Frame</button>
                             </div>
 
-                            <div id="legs-custom-options" class="space-y-2.5 pt-2 border-t border-white/10">
+                            <div id="legs-custom-options" class="space-y-3 pt-3 border-t border-white/10">
                                 <div>
                                     <div class="flex justify-between text-xs mb-1"><span class="opacity-80">Leg Height (m)</span><span id="lbl-leg-height" class="font-mono theme-accent-text font-bold">0.15 m</span></div>
                                     <input id="slider-leg-height" type="range" min="0.05" max="0.5" step="0.02" value="0.15" class="w-full accent-indigo-500 cursor-pointer">
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-xs opacity-80">Legs / Frame Color</span>
-                                    <input id="color-leg-material" type="color" value="#d4a373" class="w-7 h-7 rounded-lg bg-transparent cursor-pointer border-0">
+                                    <input id="color-leg-material" type="color" value="#d4a373" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-3 border-t border-white/10 bg-black/40 flex justify-end">
-                    <button id="btn-apply-customizer" class="w-full py-2 theme-accent-bg text-white font-semibold rounded-xl text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                <div class="p-4 border-t border-white/10 bg-black/40 flex justify-end gap-3">
+                    <button id="btn-apply-customizer" class="w-full py-2.5 theme-accent-bg text-white font-semibold rounded-xl text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
                         <i data-lucide="check" class="w-4 h-4"></i> Apply & Save Changes
                     </button>
                 </div>
@@ -378,114 +377,114 @@
     </div>
 
     <!-- Contextual Inspector Right Sidebar -->
-    <aside id="inspector-panel" class="absolute top-16 right-3 w-72 glass-panel rounded-2xl p-3.5 z-10 shadow-2xl transition-all duration-300 transform translate-x-96 opacity-0">
-        <div class="flex justify-between items-center border-b border-white/10 pb-2.5 mb-3">
-            <div class="flex items-center gap-1.5">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5 theme-accent-text"></i>
-                <h3 id="selected-item-title" class="font-bold text-xs text-white">Item Inspector</h3>
+    <aside id="inspector-panel" class="absolute top-20 right-4 w-80 glass-panel rounded-2xl p-4 z-10 shadow-2xl transition-all duration-300 transform translate-x-96 opacity-0">
+        <div class="flex justify-between items-center border-b border-white/10 pb-3 mb-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4 theme-accent-text"></i>
+                <h3 id="selected-item-title" class="font-bold text-sm text-white">Item Inspector</h3>
             </div>
             <button id="btn-close-inspector" class="opacity-70 hover:opacity-100 p-1 rounded-lg hover:bg-white/10 transition-all">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
 
-        <div class="space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto custom-scrollbar pr-1">
-            <button id="btn-open-customizer-modal" class="w-full py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xl transition-all active:scale-95 border border-indigo-400/30">
-                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
-                <span>Open 3D Customizer</span>
+        <div class="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-1">
+            <button id="btn-open-customizer-modal" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 border border-indigo-400/30">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                <span>Open Detailed 3D Customizer</span>
             </button>
 
             <div>
-                <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Magnetic Snapping</label>
-                <div class="bg-black/20 p-2 rounded-xl border border-white/10 space-y-1.5">
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Magnetic Snapping</label>
+                <div class="bg-black/20 p-2.5 rounded-xl border border-white/10 space-y-2">
                     <label class="flex items-center justify-between text-xs cursor-pointer">
-                        <span>Enable Snapping</span>
-                        <input id="toggle-magnetic-snap" type="checkbox" checked class="w-3.5 h-3.5 rounded cursor-pointer">
+                        <span>Enable Magnetic Snapping</span>
+                        <input id="toggle-magnetic-snap" type="checkbox" checked class="w-4 h-4 rounded cursor-pointer">
                     </label>
                     <hr class="border-white/10">
-                    <div class="grid grid-cols-3 gap-1">
-                        <button id="btn-snap-center-room" class="py-1 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-medium text-white transition-all">Center</button>
-                        <button id="btn-snap-walls" class="py-1 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-medium text-white transition-all">Walls</button>
-                        <button id="btn-snap-corners" class="py-1 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-medium text-white transition-all">Corners</button>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button id="btn-snap-center-room" class="py-1.5 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all active:scale-95">Center</button>
+                        <button id="btn-snap-walls" class="py-1.5 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all active:scale-95">Walls</button>
+                        <button id="btn-snap-corners" class="py-1.5 px-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white transition-all active:scale-95">Corners</button>
                     </div>
                 </div>
             </div>
 
             <div>
-                <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Wall Gap Distance</label>
-                <div class="bg-black/20 p-2.5 rounded-xl border border-white/10 flex items-center justify-between gap-2">
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Wall Gap Distance</label>
+                <div class="bg-black/20 p-3 rounded-xl border border-white/10 flex items-center justify-between gap-2">
                     <span class="text-xs opacity-70">Gap (m):</span>
-                    <input id="input-wall-gap" type="number" step="0.05" min="0" max="0.5" value="0.10" class="w-20 bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-white font-mono focus:outline-none">
+                    <input id="input-wall-gap" type="number" step="0.05" min="0" max="0.5" value="0.10" class="w-24 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none">
                 </div>
             </div>
 
             <div>
-                <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Elevation (Height)</label>
-                <div class="bg-black/20 p-2.5 rounded-xl border border-white/10 space-y-1.5">
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Elevation (Height)</label>
+                <div class="bg-black/20 p-3 rounded-xl border border-white/10 space-y-2">
                     <div class="flex items-center justify-between">
-                        <button id="btn-height-minus" class="px-2.5 py-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-all">- 10cm</button>
+                        <button id="btn-height-minus" class="px-3 py-1.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-all active:scale-95">- 10 cm</button>
                         <span id="display-furniture-height" class="text-xs font-mono font-bold theme-accent-text">0.00 m</span>
-                        <button id="btn-height-plus" class="px-2.5 py-1 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-all">+ 10cm</button>
+                        <button id="btn-height-plus" class="px-3 py-1.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-all active:scale-95">+ 10 cm</button>
                     </div>
-                    <div class="flex items-center gap-2 pt-0.5">
-                        <span class="text-[10px] opacity-70">Direct (m):</span>
-                        <input id="input-furniture-height" type="number" step="0.1" value="0" class="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-white font-mono focus:outline-none">
+                    <div class="flex items-center gap-2 pt-1">
+                        <span class="text-[11px] opacity-70">Direct (m):</span>
+                        <input id="input-furniture-height" type="number" step="0.1" value="0" class="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none">
                     </div>
                 </div>
             </div>
 
             <div>
-                <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Segment Colors</label>
-                <div id="segments-color-container" class="space-y-1.5 bg-black/20 p-2.5 rounded-xl border border-white/10"></div>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Segment Colors</label>
+                <div id="segments-color-container" class="space-y-2 bg-black/20 p-3 rounded-xl border border-white/10"></div>
             </div>
             <div>
-                <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Rotate (45° Steps)</label>
-                <div class="flex items-center justify-between bg-black/20 p-2 rounded-xl border border-white/10">
-                    <button id="btn-rot-left" class="p-2 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all cursor-pointer" title="Rotate Left 45°">
-                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 theme-accent-text"></i>
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Rotate (45° Steps)</label>
+                <div class="flex items-center justify-between bg-black/20 p-2.5 rounded-xl border border-white/10">
+                    <button id="btn-rot-left" class="p-2.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all active:scale-95 cursor-pointer" title="Rotate Left 45°">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 theme-accent-text"></i>
                     </button>
-                    <button id="btn-rotate-display" class="px-3 py-1.5 bg-black/40 border border-white/10 rounded-lg text-xs font-mono font-bold text-white hover:bg-white/5 transition-all">
+                    <button id="btn-rotate-display" class="px-4 py-2 bg-black/40 border border-white/10 rounded-lg text-xs font-mono font-bold text-white hover:bg-white/5 transition-all">
                         Rotate: 0°
                     </button>
-                    <button id="btn-rot-right" class="p-2 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all cursor-pointer" title="Rotate Right 45°">
-                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5 theme-accent-text"></i>
+                    <button id="btn-rot-right" class="p-2.5 bg-black/40 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all active:scale-95 cursor-pointer" title="Rotate Right 45°">
+                        <i data-lucide="rotate-cw" class="w-4 h-4 theme-accent-text"></i>
                     </button>
                 </div>
             </div>
             <div>
-                <label class="text-[11px] font-semibold opacity-60 uppercase tracking-wider block mb-1.5">Fine Positioning</label>
-                <div class="grid grid-cols-3 gap-1 w-28 mx-auto">
+                <label class="text-xs font-semibold opacity-60 uppercase tracking-wider block mb-2">Fine Positioning</label>
+                <div class="grid grid-cols-3 gap-1.5 w-32 mx-auto">
                     <div></div>
-                    <button id="btn-nudge-up" class="p-2 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center transition-all cursor-pointer"><i data-lucide="chevron-up" class="w-3.5 h-3.5 text-white"></i></button>
+                    <button id="btn-nudge-up" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-up" class="w-4 h-4 text-white"></i></button>
                     <div></div>
-                    <button id="btn-nudge-left" class="p-2 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center transition-all cursor-pointer"><i data-lucide="chevron-left" class="w-3.5 h-3.5 text-white"></i></button>
-                    <button id="btn-nudge-down" class="p-2 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center transition-all cursor-pointer"><i data-lucide="chevron-down" class="w-3.5 h-3.5 text-white"></i></button>
-                    <button id="btn-nudge-right" class="p-2 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center transition-all cursor-pointer"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-white"></i></button>
+                    <button id="btn-nudge-left" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-left" class="w-4 h-4 text-white"></i></button>
+                    <button id="btn-nudge-down" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-down" class="w-4 h-4 text-white"></i></button>
+                    <button id="btn-nudge-right" class="p-2.5 bg-black/30 hover:bg-white/10 border border-white/10 rounded-lg flex justify-center items-center active:scale-95 transition-all cursor-pointer"><i data-lucide="chevron-right" class="w-4 h-4 text-white"></i></button>
                 </div>
             </div>
-            <button id="btn-delete-item" class="w-full mt-1.5 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-semibold flex justify-center items-center gap-1.5 transition-all">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Remove Item
+            <button id="btn-delete-item" class="w-full mt-2 py-2.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-semibold flex justify-center items-center gap-2 transition-all">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Remove Item
             </button>
         </div>
     </aside>
 
     <!-- Theme Switcher -->
-    <div id="theme-menu-wrapper" class="absolute bottom-3 right-3 z-20">
-        <div id="theme-dropdown" class="absolute bottom-11 right-0 glass-panel p-2.5 rounded-2xl mb-2 shadow-2xl w-48 hidden space-y-1.5">
-            <div class="flex items-center gap-2 border-b border-white/10 pb-1.5">
-                <i data-lucide="palette" class="w-3.5 h-3.5 theme-accent-text"></i>
+    <div id="theme-menu-wrapper" class="absolute bottom-4 right-4 z-20">
+        <div id="theme-dropdown" class="absolute bottom-12 right-0 glass-panel p-3 rounded-2xl mb-2 shadow-2xl w-52 hidden space-y-2">
+            <div class="flex items-center gap-2 border-b border-white/10 pb-2">
+                <i data-lucide="palette" class="w-4 h-4 theme-accent-text"></i>
                 <span class="text-xs font-bold text-white">Application Theme</span>
             </div>
             <div class="space-y-1">
-                <button data-theme="" class="w-full text-left px-2 py-1 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Deep Indigo</span> <div class="w-3 h-3 rounded-full bg-indigo-600 border border-indigo-300"></div></button>
-                <button data-theme="theme-emerald" class="w-full text-left px-2 py-1 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Sage Emerald</span> <div class="w-3 h-3 rounded-full bg-emerald-700 border border-emerald-400"></div></button>
-                <button data-theme="theme-ocean" class="w-full text-left px-2 py-1 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Muted Ocean</span> <div class="w-3 h-3 rounded-full bg-sky-700 border border-sky-400"></div></button>
-                <button data-theme="theme-rose" class="w-full text-left px-2 py-1 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Dusty Wine</span> <div class="w-3 h-3 rounded-full bg-rose-800 border border-rose-400"></div></button>
-                <button data-theme="theme-light" class="w-full text-left px-2 py-1 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Studio Slate</span> <div class="w-3 h-3 rounded-full bg-slate-600 border border-slate-300"></div></button>
+                <button data-theme="" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Deep Indigo</span> <div class="w-3.5 h-3.5 rounded-full bg-indigo-600 border border-indigo-300"></div></button>
+                <button data-theme="theme-emerald" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Sage Emerald</span> <div class="w-3.5 h-3.5 rounded-full bg-emerald-700 border border-emerald-400"></div></button>
+                <button data-theme="theme-ocean" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Muted Ocean</span> <div class="w-3.5 h-3.5 rounded-full bg-sky-700 border border-sky-400"></div></button>
+                <button data-theme="theme-rose" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Dusty Wine</span> <div class="w-3.5 h-3.5 rounded-full bg-rose-800 border border-rose-400"></div></button>
+                <button data-theme="theme-light" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs opacity-80 hover:opacity-100 hover:bg-white/10 transition-all flex items-center justify-between"><span>Studio Slate</span> <div class="w-3.5 h-3.5 rounded-full bg-slate-600 border border-slate-300"></div></button>
             </div>
         </div>
-        <button id="btn-theme-toggle" class="glass-panel p-2.5 rounded-full shadow-2xl opacity-80 hover:opacity-100 cursor-pointer transition-all hover:scale-110 active:scale-95 flex items-center justify-center">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4 theme-accent-text"></i>
+        <button id="btn-theme-toggle" class="glass-panel p-3 rounded-full shadow-2xl opacity-80 hover:opacity-100 cursor-pointer transition-all hover:scale-110 active:scale-95 flex items-center justify-center">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5 theme-accent-text"></i>
         </button>
     </div>
 
@@ -607,7 +606,6 @@
         let roomGroup, floorMesh, ceilingMesh;
         let walls = { front: null, back: null, left: null, right: null };
         let customWallMeshes = [];
-        let customCeilingMeshes = [];
         let wallGridGroup = null, floorGridHelper = null, ceilingGridGroup = null;
         
         let roomWidth = 5.0, roomDepth = 5.0, roomHeight = 2.8;
@@ -641,16 +639,6 @@
             initSketcherCanvas();
             initCustomizer3DView();
             animate();
-
-            if (window.innerWidth <= 768) {
-                const sidebarContent = document.getElementById('sidebar-content-wrap');
-                const sidebar = document.getElementById('main-sidebar');
-                const sidebarToggleIcon = document.getElementById('sidebar-icon-toggle');
-                sidebarContent.classList.add('hidden');
-                sidebar.style.height = '48px';
-                sidebarToggleIcon.setAttribute('data-lucide', 'maximize-2');
-                initLucideIcons();
-            }
         });
 
         function initLucideIcons() { lucide.createIcons(); }
@@ -718,7 +706,6 @@
             roomGroup = new THREE.Group();
             walls = { front: null, back: null, left: null, right: null };
             customWallMeshes = [];
-            customCeilingMeshes = [];
 
             const wallColorHex = document.getElementById('color-walls').value;
             const floorColorHex = document.getElementById('color-floor').value;
@@ -873,11 +860,12 @@
                         subCeiling.rotation.x = Math.PI / 2;
                         subCeiling.position.y = currentHeight;
                         subCeiling.userData = { isCustomCeiling: true };
-                        customCeilingMeshes.push(subCeiling);
+                        ceilingMesh = subCeiling;
                         roomGroup.add(subCeiling);
                     }
 
                     if (showWalls) {
+                        const wMat = createWallMaterial(wallColorHex);
                         for (let i = 0; i < polyPoints.length; i++) {
                             const p1 = polyPoints[i];
                             const p2 = polyPoints[(i + 1) % polyPoints.length];
@@ -887,19 +875,6 @@
                             const wallLength = Math.hypot(dx, dz);
                             const angle = Math.atan2(dz, dx);
 
-                            const normalX = -dz / wallLength;
-                            const normalZ = dx / wallLength;
-
-                            let chosenWallColor = wallColorHex;
-                            if (Math.abs(normalX) > Math.abs(normalZ)) {
-                                if (normalX > 0 && wallRightHex !== '#f1f5f9') chosenWallColor = wallRightHex;
-                                else if (normalX < 0 && wallLeftHex !== '#f1f5f9') chosenWallColor = wallLeftHex;
-                            } else {
-                                if (normalZ > 0 && wallFrontHex !== '#f1f5f9') chosenWallColor = wallFrontHex;
-                                else if (normalZ < 0 && wallBackHex !== '#f1f5f9') chosenWallColor = wallBackHex;
-                            }
-
-                            const wMat = createWallMaterial(chosenWallColor);
                             const wallGeom = new THREE.PlaneGeometry(wallLength, currentHeight);
                             const wall = new THREE.Mesh(wallGeom, wMat);
 
@@ -1128,8 +1103,8 @@
 
                 roomMode = 'custom';
                 document.getElementById('sketcher-modal').classList.add('hidden');
-                document.getElementById('btn-mode-custom').className = 'py-1.5 px-2 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all';
-                document.getElementById('btn-mode-box').className = 'py-1.5 px-2 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all';
+                document.getElementById('btn-mode-custom').className = 'py-2 px-3 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all';
+                document.getElementById('btn-mode-box').className = 'py-2 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all';
                 document.getElementById('box-dimensions-wrapper').classList.add('hidden');
                 buildRoom();
             }
@@ -1146,7 +1121,7 @@
             });
         }
 
-        // --- PROCEDURAL FURNITURE MESH GENERATOR (KOMPLETAN KATALOG) ---
+        // --- PROCEDURAL FURNITURE MESH GENERATOR ---
         function createFurnitureMesh(typeId) {
             const group = new THREE.Group();
             let parts = {};
@@ -1500,6 +1475,7 @@
             obj.add(legsGroup);
         }
 
+        // --- POPULATE CATALOG WITH ONLY 2 MAIN GROUPS ---
         function populateCatalogGroups() {
             const container = document.getElementById('catalog-groups-container');
             container.innerHTML = '';
@@ -1509,27 +1485,27 @@
                 groupCard.className = 'border border-white/10 bg-black/20 rounded-xl overflow-hidden transition-all';
                 
                 const groupHeaderBtn = document.createElement('button');
-                groupHeaderBtn.className = 'w-full px-3 py-2.5 flex justify-between items-center text-xs font-bold theme-accent-text hover:bg-white/10 transition-all';
-                groupHeaderBtn.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${groupData.icon}" class="w-4 h-4"></i><span>${groupData.name}</span></div><i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-60 transition-transform duration-200 icon-group-chevron"></i>`;
+                groupHeaderBtn.className = 'w-full px-4 py-3 flex justify-between items-center text-xs md:text-sm font-bold theme-accent-text hover:bg-white/10 transition-all';
+                groupHeaderBtn.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${groupData.icon}" class="w-4 h-4"></i><span>${groupData.name}</span></div><i data-lucide="chevron-down" class="w-4 h-4 opacity-60 transition-transform duration-200 icon-group-chevron"></i>`;
                 
                 const categoriesContainer = document.createElement('div');
-                categoriesContainer.className = 'p-2.5 border-t border-white/10 bg-black/30 space-y-2 hidden';
+                categoriesContainer.className = 'p-3 border-t border-white/10 bg-black/30 space-y-2 hidden';
 
                 groupData.categories.forEach((cat) => {
                     const catWrapper = document.createElement('div');
                     catWrapper.className = 'border border-white/10 bg-black/40 rounded-lg overflow-hidden';
                     
                     const catHeaderBtn = document.createElement('button');
-                    catHeaderBtn.className = 'w-full px-2.5 py-2 flex justify-between items-center text-[11px] font-bold hover:bg-white/10 transition-all';
-                    catHeaderBtn.innerHTML = `<div class="flex items-center gap-1.5"><i data-lucide="${cat.icon}" class="w-3.5 h-3.5 text-indigo-400"></i><span>${cat.name}</span></div><i data-lucide="chevron-down" class="w-3 h-3 opacity-60 transition-transform duration-200 icon-cat-chevron"></i>`;
+                    catHeaderBtn.className = 'w-full px-3 py-2 flex justify-between items-center text-xs font-bold hover:bg-white/10 transition-all';
+                    catHeaderBtn.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${cat.icon}" class="w-3.5 h-3.5 text-indigo-400"></i><span>${cat.name}</span></div><i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-60 transition-transform duration-200 icon-cat-chevron"></i>`;
                     
                     const itemsGrid = document.createElement('div');
-                    itemsGrid.className = 'grid grid-cols-2 gap-1.5 p-2 border-t border-white/10 bg-black/50 hidden';
+                    itemsGrid.className = 'grid grid-cols-2 gap-2 p-2.5 border-t border-white/10 bg-black/50 hidden';
                     
                     cat.items.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'bg-black/60 hover:bg-white/10 border border-white/10 p-2 rounded-lg cursor-pointer transition-all flex flex-col items-center text-center group active:scale-95';
-                        card.innerHTML = `<div class="p-1 bg-white/5 rounded-lg mb-1"><i data-lucide="${item.icon}" class="w-4 h-4 theme-accent-text"></i></div><span class="text-[10px] font-medium leading-tight">${item.name}</span>`;
+                        card.innerHTML = `<div class="p-1.5 bg-white/5 rounded-lg mb-1"><i data-lucide="${item.icon}" class="w-4 h-4 theme-accent-text"></i></div><span class="text-[10px] font-medium leading-tight">${item.name}</span>`;
                         card.addEventListener('click', () => spawnFurniture(item.id, item.name));
                         itemsGrid.appendChild(card);
                     });
@@ -1602,7 +1578,7 @@
                 const currentHex = '#' + (material.color ? material.color.getHexString() : 'ffffff');
                 const row = document.createElement('div');
                 row.className = 'flex items-center justify-between py-1';
-                row.innerHTML = `<span class="text-xs">${partName}</span><input type="color" value="${currentHex}" data-part="${partName}" class="w-7 h-7 rounded-lg bg-transparent cursor-pointer border-0 color-segment-picker">`;
+                row.innerHTML = `<span class="text-xs">${partName}</span><input type="color" value="${currentHex}" data-part="${partName}" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0 color-segment-picker">`;
                 container.appendChild(row);
             });
             container.querySelectorAll('.color-segment-picker').forEach(input => {
@@ -1769,11 +1745,11 @@
                 const hexColor = '#' + (mat.color ? mat.color.getHexString() : 'ffffff');
 
                 const row = document.createElement('div');
-                row.className = 'flex items-center justify-between py-1 border-b border-white/5 last:border-0';
+                row.className = 'flex items-center justify-between py-1.5 border-b border-white/5 last:border-0';
                 row.innerHTML = `
                     <span class="text-xs font-medium text-white">${partName}</span>
                     <div class="flex items-center gap-2">
-                        <input type="color" value="${hexColor}" data-part="${partName}" class="customizer-color-input w-7 h-7 rounded-lg bg-transparent cursor-pointer border-0">
+                        <input type="color" value="${hexColor}" data-part="${partName}" class="customizer-color-input w-8 h-8 rounded-lg bg-transparent cursor-pointer border-0">
                     </div>
                 `;
                 partsContainer.appendChild(row);
@@ -1835,16 +1811,16 @@
 
             window.addEventListener('pointerup', () => { isDraggingItem = false; controls.enabled = true; });
 
+            // Sidebar Minimize Toggle
             const sidebar = document.getElementById('main-sidebar');
             const sidebarContent = document.getElementById('sidebar-content-wrap');
             const sidebarToggleIcon = document.getElementById('sidebar-icon-toggle');
-            let isSidebarMinimized = window.innerWidth <= 768;
-            
+            let isSidebarMinimized = false;
             document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
                 isSidebarMinimized = !isSidebarMinimized;
                 if (isSidebarMinimized) {
                     sidebarContent.classList.add('hidden');
-                    sidebar.style.height = '48px';
+                    sidebar.style.height = '60px';
                     sidebarToggleIcon.setAttribute('data-lucide', 'maximize-2');
                 } else {
                     sidebarContent.classList.remove('hidden');
@@ -1854,23 +1830,7 @@
                 initLucideIcons();
             });
 
-            let isHumanViewActive = false;
-            document.getElementById('btn-human-view').addEventListener('click', () => {
-                isHumanViewActive = !isHumanViewActive;
-                const btn = document.getElementById('btn-human-view');
-                if (isHumanViewActive) {
-                    camera.position.set(0, 1.6, 0);
-                    controls.target.set(0, 1.6, 2);
-                    controls.update();
-                    btn.classList.add('theme-accent-border', 'border');
-                } else {
-                    camera.position.set(8, 6, 8);
-                    controls.target.set(0, 1, 0);
-                    controls.update();
-                    btn.classList.remove('theme-accent-border', 'border');
-                }
-            });
-
+            // Quick Undo & Delete All buttons
             document.getElementById('btn-quick-undo').addEventListener('click', () => {
                 if (placedFurniture.length > 0) {
                     const lastItem = placedFurniture.pop();
@@ -2053,21 +2013,21 @@
             };
 
             document.getElementById('tab-catalog').addEventListener('click', () => {
-                document.getElementById('tab-catalog').className = 'flex-1 py-2.5 text-xs font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-1 transition-all';
-                document.getElementById('tab-room').className = 'flex-1 py-2.5 text-xs font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-1 transition-all';
+                document.getElementById('tab-catalog').className = 'flex-1 py-3 text-xs md:text-sm font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-1.5 transition-all';
+                document.getElementById('tab-room').className = 'flex-1 py-3 text-xs md:text-sm font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-1.5 transition-all';
                 document.getElementById('panel-catalog').classList.remove('hidden'); document.getElementById('panel-room').classList.add('hidden');
             });
 
             document.getElementById('tab-room').addEventListener('click', () => {
-                document.getElementById('tab-room').className = 'flex-1 py-2.5 text-xs font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-1 transition-all';
-                document.getElementById('tab-catalog').className = 'flex-1 py-2.5 text-xs font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-1 transition-all';
+                document.getElementById('tab-room').className = 'flex-1 py-3 text-xs md:text-sm font-semibold border-b-2 theme-accent-border theme-accent-text flex justify-center items-center gap-1.5 transition-all';
+                document.getElementById('tab-catalog').className = 'flex-1 py-3 text-xs md:text-sm font-semibold border-b-2 border-transparent opacity-70 hover:opacity-100 flex justify-center items-center gap-1.5 transition-all';
                 document.getElementById('panel-room').classList.remove('hidden'); document.getElementById('panel-catalog').classList.add('hidden');
             });
 
             document.getElementById('btn-mode-box').addEventListener('click', () => {
                 roomMode = 'box';
-                document.getElementById('btn-mode-box').className = 'py-1.5 px-2 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all';
-                document.getElementById('btn-mode-custom').className = 'py-1.5 px-2 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all';
+                document.getElementById('btn-mode-box').className = 'py-2 px-3 bg-black/40 border theme-accent-border rounded-xl text-xs font-semibold transition-all';
+                document.getElementById('btn-mode-custom').className = 'py-2 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition-all';
                 document.getElementById('box-dimensions-wrapper').classList.remove('hidden');
                 buildRoom();
             });
@@ -2154,13 +2114,15 @@
                 });
             }
 
-            if (roomMode === 'custom') {
-                customCeilingMeshes.forEach(cMesh => {
-                    cMesh.visible = camPos.y < currentHeight;
-                });
-            } else if (ceilingMesh) {
-                ceilingMesh.visible = ceilingVisible;
+            if (ceilingMesh) {
+                // Fixed multiroom ceiling transparency behavior
+                if (roomMode === 'custom') {
+                    ceilingMesh.visible = camPos.y < currentHeight;
+                } else {
+                    ceilingMesh.visible = ceilingVisible;
+                }
             }
+
 
             renderer.render(scene, camera);
         }
